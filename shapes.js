@@ -1,4 +1,4 @@
-var Shape = {
+var Shape_functions = {
     rotate : (x, y, width, height, rotation) => {
         let rotation_matrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
         let origin_position_matrix = [[0], [0], [1]];
@@ -59,6 +59,17 @@ var Shape = {
     },
 }
 
+// class Shape {
+//     draw();
+//     load(shape); // JSON.parse(shape)... this.var = parsedShape.var
+//     save(); // drawn_shapes.push(['4_letter_shape_type', this.toString()]);
+//     toJSON();
+//     toString = () => {
+//         return JSON.stringify(this.toJSON());
+//     }
+// }
+
+
 class Circle {
     constructor(x_origin = 0, y_origin = 0, radius = 1, trans_x = 0, trans_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         this.x_origin = x_origin;
@@ -82,7 +93,7 @@ class Circle {
             case 'sele':
                 break;
             case 'tran':
-                let tran = Shape.translate(this.x_origin, this.y_origin, this.radius, this.radius, this.trans_x, this.trans_y);
+                let tran = Shape_functions.translate(this.x_origin, this.y_origin, this.radius, this.radius, this.trans_x, this.trans_y);
                 
                 this.x_origin = tran[1][0][0]; // since we're translating... use the coordinates from new_end
                 this.y_origin = tran[1][1][0];
@@ -122,7 +133,11 @@ class Circle {
     }
 
     save = () => {
-        drawn_shapes.push(['circ', this.toString()]);
+        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
+            drawn_shapes.push(['circ', this.toString()]);
+        } else {
+            drawn_shapes[0] = ['circ', this.toString()];
+        }
     }
 
     toJSON = () => {
