@@ -11,6 +11,7 @@
             drawn_shapes = new Array();
             page_margin_x = 40;
             page_margin_y = 75;
+            canvas_size = 600;
             
             keys_pressed = new Array();
             const ctrl_key = 17;
@@ -44,6 +45,8 @@
 
             // mouse functions
             mouse_pressed = (event) => {
+                mouse_over_canvas = event.pageX - page_margin_x >= 0 && event.pageX - page_margin_x <= canvas_size && event.pageY - page_margin_y >= 0 && event.pageY - page_margin_y <= canvas_size;
+
                 if(mouse_over_canvas) {
                     x_pressed = event.pageX - page_margin_x;
                     y_pressed = event.pageY - page_margin_y;
@@ -299,12 +302,12 @@
     </head>
     <body onload="draw(); disable_current_button();" onmousedown="mouse_pressed(event)" onmouseup="mouse_released(event)" onmousemove="mouse_move(event)" onkeydown="check_multiple_key_presses(event); undo()" onkeyup="check_multiple_key_presses(event);">
         <div id="toolbar">
-            <button onclick="save();" type="button" value="save">Save</button>
-            <button onclick="load();" type="button" value="load">Load</button>
-            <button onclick="export_as_png();" type="button" value="expo">Export as PNG</button>
-            |
-            <button onclick="undo();" type="button" value="undo">Undo</button>
-            <button onclick="redo();" type="button" value="load">Redo</button>
+            <a onclick="save();">Save</a>
+            <a onclick="load();" >Load</a>
+            <a onclick="export_as_png();">Export as PNG</a>
+            <span class="blue">|</span>
+            <a onclick="undo();">Undo</a>
+            <a onclick="redo();">Redo</a>
         </div>
         <div id="left-side">
             <div id='canvas-wrapper'>
