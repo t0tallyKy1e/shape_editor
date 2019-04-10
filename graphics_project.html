@@ -385,13 +385,13 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <input type='range' min='1' max='600' value='5' id='shape-size-range' onchange="display_size('range', this.value)"/>
+                        <td class="rgb-range">
+                            <input disabled type='text' value='10' id='shape-size-text' onchange="display_size('text', this.value)"/>
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             <input disabled type='text' id='shape-fill-color-text' value="#000000"/><br>
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             <input disabled type='text' id='shape-stroke-color-text' onchange="set_current_stroke(this.value)" value="#000000"/>
                         </td>
                         <td>
@@ -399,23 +399,23 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <input disabled type='text' value='10' id='shape-size-text' onchange="display_size('text', this.value)"/>
+                        <td class="rgb-range">
+                            size: <input type='range' min='1' max='600' value='5' id='shape-size-range' onchange="display_size('range', this.value)"/>
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             red: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-r' onchange="set_current_fill()" /><br>
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             red: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-r' onchange="set_current_stroke()" /><br>
                         </td>
                     </tr>
                     <tr>
                         <td>
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             green: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-g' onchange="set_current_fill()" /><br>
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             green: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-g' onchange="set_current_stroke()" /><br>
                         </td>
                     </tr>
@@ -423,10 +423,10 @@
                         <td>
                             
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             blue: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-b' onchange="set_current_fill()" />
                         </td>
-                        <td>
+                        <td class="rgb-range">
                             blue: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-b' onchange="set_current_stroke()" />
                         </td>
                     </tr>

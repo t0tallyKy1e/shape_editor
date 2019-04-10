@@ -47,6 +47,10 @@ td {
     color: #448AFF;
 }
 
+.rgb-range {
+    text-align: right;
+}
+
 .section {
     background-color: #424242;
     border: 2px solid #448AFF;
@@ -64,6 +68,10 @@ td {
 
 #debug h3 {
     padding: 0px;
+}
+
+#debug h2 {
+    padding-left: 10px;
 }
 
 #left-side {
