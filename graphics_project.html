@@ -148,12 +148,34 @@
                 current_tool = tool;
             }
 
-            set_current_fill = (fill) => {
-                current_fill = fill;
+            set_current_fill = () => {
+                red = parseInt(document.getElementById('shape-fill-color-range-r').value).toString(16);
+                red = red.length == 1 ? "0" + red : red;
+
+                green = parseInt(document.getElementById('shape-fill-color-range-g').value).toString(16);
+                green = green.length == 1 ? "0" + green : green;
+
+                blue = parseInt(document.getElementById('shape-fill-color-range-b').value).toString(16);
+                blue = blue.length == 1 ? "0" + blue : blue;
+
+                current_fill = "#" + red + green +  blue;
+                document.getElementById('shape-fill-color-text').value = current_fill;
+                document.getElementById('shape-fill-color-text').style.backgroundColor = current_fill;
             }
 
-            set_current_stroke = (stroke) => {
-                current_stroke = stroke;
+            set_current_stroke = () => {
+                red = parseInt(document.getElementById('shape-stroke-color-range-r').value).toString(16);
+                red = red.length == 1 ? "0" + red : red;
+
+                green = parseInt(document.getElementById('shape-stroke-color-range-g').value).toString(16);
+                green = green.length == 1 ? "0" + green : green;
+
+                blue = parseInt(document.getElementById('shape-stroke-color-range-b').value).toString(16);
+                blue = blue.length == 1 ? "0" + blue : blue;
+
+                current_stroke = "#" + red + green +  blue;
+                document.getElementById('shape-stroke-color-text').value = current_stroke;
+                document.getElementById('shape-stroke-color-text').style.backgroundColor = current_stroke;
             }
 
             disable_current_button = () => {
@@ -353,27 +375,59 @@
                 <table> <!-- GET RID OF THE TABLE LAYOUT-->
                     <tr>
                         <td>
-                            <div id="tools-shape-size">
-                                <h2>shape size</h2>
-                                <div>
-                                    <input type='range' min='1' max='600' value='5' id='shape-size-range' onchange="display_size('range', this.value)"/>
-                                </div>
-                                <div>
-                                    <input type='text' value='10' id='shape-size-text' onchange="display_size('text', this.value)"/>
-                                </div>
-                            </div>
+                            <h2>shape size</h2>
                         </td>
                         <td>
-                            <div id="tools-shape-fill">
-                                <h2>fill color</h2>
-                                <input type='text' id='shape-fill-text' onchange="set_current_fill(this.value)" value="#000000"/>
-                            </div>
+                            <h2>fill color</h2>
                         </td>
                         <td>
-                            <div id="tools-shape-stroke">
-                                <h2>stroke color</h2>
-                                <input type='text' id='shape-stroke-text' onchange="set_current_stroke(this.value)" value="#000000"/>
-                            </div>
+                            <h2>stroke color</h2>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type='range' min='1' max='600' value='5' id='shape-size-range' onchange="display_size('range', this.value)"/>
+                        </td>
+                        <td>
+                            <input disabled type='text' id='shape-fill-color-text' value="#000000"/><br>
+                        </td>
+                        <td>
+                            <input disabled type='text' id='shape-stroke-color-text' onchange="set_current_stroke(this.value)" value="#000000"/>
+                        </td>
+                        <td>
+                            
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input disabled type='text' value='10' id='shape-size-text' onchange="display_size('text', this.value)"/>
+                        </td>
+                        <td>
+                            red: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-r' onchange="set_current_fill()" /><br>
+                        </td>
+                        <td>
+                            red: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-r' onchange="set_current_stroke()" /><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            green: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-g' onchange="set_current_fill()" /><br>
+                        </td>
+                        <td>
+                            green: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-g' onchange="set_current_stroke()" /><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            blue: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-b' onchange="set_current_fill()" />
+                        </td>
+                        <td>
+                            blue: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-b' onchange="set_current_stroke()" />
                         </td>
                     </tr>
                 </table>
