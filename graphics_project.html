@@ -45,8 +45,8 @@
             // mouse functions
             mouse_pressed = (event) => {
                 if(mouse_over_canvas) {
-                    x_pressed = event.clientX - page_margin_x;
-                    y_pressed = event.clientY - page_margin_y;
+                    x_pressed = event.pageX - page_margin_x;
+                    y_pressed = event.pageY - page_margin_y;
 
                     mouse_is_pressed = true;
                     select();
@@ -58,8 +58,8 @@
             }
 
             mouse_move = (event) => {
-                x_move = event.clientX - page_margin_x;
-                y_move = event.clientY - page_margin_y;
+                x_move = event.pageX - page_margin_x;
+                y_move = event.pageY - page_margin_y;
 
                 if(mouse_is_pressed && !select_mode) {
                     clear_canvas();
@@ -103,8 +103,8 @@
             }
 
             mouse_released = (event) => {
-                x_released = event.clientX - page_margin_x;
-                y_released = event.clientY - page_margin_y;
+                x_released = event.pageX - page_margin_x;
+                y_released = event.pageY - page_margin_y;
 
                 mouse_is_pressed = false;
                 
