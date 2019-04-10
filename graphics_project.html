@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Shape Editor</title>
+        <link rel="stylesheet" type="text/css" href="main.css">
+        <script src="shape.js" type="application/javascript"></script>
+        <script type="text/javascript">
+            DEBUG = false;
+            mouse_over_canvas = true;
+            drawn_shapes = new Array();
+            page_margin_x = 30;
+            page_margin_y = 75;
+            
+            keys_pressed = new Array();
+            const ctrl_key = 17;
+            const z_key = 90;
+
+            current_fill = '#000000';
+            current_shape = 'circ';
+            current_size = 0;
+            current_stroke = '#000000';
+            current_tool = 'tran';
+            select_mode = false;
+
+            temp_shape = []; // used for saving the currently drawn shape
+
+            // canvas functions
+            draw = () => {
+                canvas = document.getElementById('canvas');
+                context = canvas.getContext('2d');
+
+                mouse_is_pressed = false;
+                set_current_shape(current_shape);
+                display_size();
+
+                // let temp_circ = new Circle();
+                // temp_circ.load('{"shape": "circ", "x_origin": 300, "y_origin": 300, "radius": 40, "trans_x": 320, "trans_y": 320, "stroke_color": "#000000", "fill_color": "#000000"}');
+                // temp_circ.draw();
+            }
+
+            clear_canvas = () => {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+
+
+
+            // mouse functions
+            mouse_pressed = (event) => {
+                if(mouse_over_canvas) {
+                    x_pressed = event.clientX - page_margin_x;
+                    y_pressed = event.clientY - page_margin_y;
+
+                    mouse_is_pressed = true;
+                    select();
+
+                    document.getElementById('mouse_pressed_x').innerHTML = x_pressed;
+                    document.getElementById('mouse_pressed_y').innerHTML = y_pressed;
+                    document.getElementById('status').innerHTML = mouse_is_pressed;
+                }
+            }
+
+            mouse_move = (event) => {
+                x_move = event.clientX - page_margin_x;
+                y_move = event.clientY - page_margin_y;
+
+                if(mouse_is_pressed && !select_mode) {
+                    clear_canvas();
+                    draw_previous();
+
+                    switch(current_shape) {
+                        case "circ":
+                            // draw_circ(x_pressed, y_pressed, current_size, x_move, y_move);
+                            circ = new Circle(x_pressed, y_pressed, current_size / 2, x_move, y_move, current_stroke, current_fill);
+                            circ.draw();
+                            break;
+                        case "curv":
+                            break;
+                        case "elli":
+                            draw_elli(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            break;
+                        case "line":
+                            draw_line(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            break;
+                        case "pgon":
+                            break;
+                        case "plin":
+                            break;
+                        case "rect":
+                            draw_rect(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            break;
+                        case "squa":
+                            draw_squa(x_pressed, y_pressed, current_size, x_move, y_move);
+                            break;
+                        case "tria":
+                            draw_tria(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            break;
+                        default:
+                            console.log("Error: no shape selected.");
+                            break;
+                    }
+                }
+
+                document.getElementById('mouse_move_x').innerHTML = x_move;
+                document.getElementById('mouse_move_y').innerHTML = y_move;
+                document.getElementById('status').innerHTML = mouse_is_pressed;
+            }
+
+            mouse_released = (event) => {
+                x_released = event.clientX - page_margin_x;
+                y_released = event.clientY - page_margin_y;
+
+                mouse_is_pressed = false;
+                
+                save_shape();
+                drawn_shapes.push(circ);
+                console.log(drawn_shapes);
+                console.log(circ);
+                
+                document.getElementById('mouse_released_x').innerHTML = x_released;
+                document.getElementById('mouse_released_y').innerHTML = y_released;
+                document.getElementById('status').innerHTML = mouse_is_pressed;
+            }
+
+
+
+
+            // key functions
+            // -- I got the algorithm for this solution from https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript#answer-12444641
+            check_multiple_key_presses = (event) => {
+                keys_pressed[event.keyCode] = event.type == 'keydown';
+            }
+
+            //-- currently erases text inputs
+            undo = () => {
+                if (keys_pressed[ctrl_key] && keys_pressed[z_key]) {
+                    drawn_shapes.pop();
+                    clear_canvas();
+                    draw_previous();
+                }
+            }
+
+
+
+
+            // button functions
+            set_current_shape = (shape) => {
+                current_shape = shape;
+            }
+
+            set_current_tool = (tool) => {
+                current_tool = tool;
+            }
+
+            set_current_fill = (fill) => {
+                current_fill = fill;
+            }
+
+            set_current_stroke = (stroke) => {
+                current_stroke = stroke;
+            }
+
+            disable_current_button = () => {
+                let buttons = document.getElementsByTagName("button");
+                
+                for (let i = 0; i < buttons.length; ++i) {
+                    if(buttons[i].value == current_shape || buttons[i].value == current_tool) {
+                        buttons[i].disabled = true;
+                    } else {
+                        buttons[i].disabled = false;
+                    }
+                }
+            }
+
+
+
+            // error in draw_previous() when circle isn't the first shape drawn
+
+
+
+
+            // saving / printing previous shapes
+            print_all_drawn_shapes = () => {
+                console.log(drawn_shapes);
+            }
+
+            save_shape = () => {
+                drawn_shapes.push(temp_shape);
+            }
+
+            draw_previous = () => {
+                temp_tool = current_tool;
+                temp_fill = current_fill;
+                temp_stroke = current_stroke;
+
+                drawn_shapes.forEach((shape) => {
+                    current_tool = shape[1];
+                    current_fill = shape[3];
+                    current_stroke = shape[4];
+
+                    switch(shape[0]) {
+                        case "circ":
+                            draw_circ(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4]);
+                            break;
+                        case "curv":
+                            break;
+                        case "elli":
+                            draw_elli(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            break;
+                        case "line":
+                            draw_line(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            break;
+                        case "pgon":
+                            break;
+                        case "plin":
+                            break;
+                        case "rect":
+                            draw_rect(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            break;
+                        case "squa":
+                            draw_squa(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4]);
+                            break;
+                        case "tria":
+                            draw_tria(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            break;
+                        default:
+                            console.log("Error -> draw_previous(): no shape definition for " + shape[0] + ".");
+                            break;
+                    }
+                });
+
+                current_tool = temp_tool;
+                current_stroke = temp_stroke;
+                current_fill = temp_fill;
+            }
+
+
+
+
+
+            // file functions
+            export_as_png = () => {
+                window.open(canvas.toDataURL()); // if drawings are all black, nothing shows
+                console.log(canvas.toDataURL());
+            }
+
+
+            // extras
+            // -- found this at: https://stackoverflow.com/questions/21483999/using-atan2-to-find-angle-between-two-vectors#answer-21484228
+            calculate_rotation = (x0, y0, x1, y1) => {
+                return Math.atan2(y1 - y0, x1 - x0);
+            }
+
+            degrees_to_radians = (degrees) => {
+                return degrees * Math.PI / 180;
+            }
+
+            display_size = (type, size) => {
+                if(type == 'text') {
+                    document.getElementById('shape-size-range').value = document.getElementById('shape-size-text').value;
+                } else if (type == 'range') {
+                    document.getElementById('shape-size-text').value = document.getElementById('shape-size-range').value;
+                }
+
+                current_size = parseInt(document.getElementById('shape-size-text').value);
+            }
+
+            draw_pixel = (x, y) => {
+                context.strokeRect(x, y, 1, 1);
+            }
+
+            matrix_mult = (a, b) => {
+                let a_num_rows = a.length;
+                let a_num_cols = a[0].length;
+                let b_num_cols = b[0].length;
+                let m = new Array(a_num_rows);
+
+                for (let r = 0; r < a_num_rows; ++r) {
+                    m[r] = new Array(b_num_cols);
+                    for (let c = 0; c < b_num_cols; ++c) {
+                        m[r][c] = 0;
+
+                        for (let i = 0; i < a_num_cols; ++i) {
+                            m[r][c] += a[r][i] * b[i][c];
+                        }
+                    }
+                }
+                return m;
+            }
+
+            print_matrix = (matrix) => {
+                for(let i = 0; i < matrix.length; i++) {
+                    for(let j = 0; j < matrix[0].length; j++) {
+                        console.log(matrix[i][j] + " ");
+                    }
+                    console.log("new row");
+                }
+            }
+
+            radians_to_degrees = (radians) => {
+                return radians * 180 / Math.PI;
+            }
+        </script>
+    </head>
+    <body onload="draw(); disable_current_button();" onmousedown="mouse_pressed(event)" onmouseup="mouse_released(event)" onmousemove="mouse_move(event)" onkeydown="check_multiple_key_presses(event); undo()" onkeyup="check_multiple_key_presses(event);">
+        <div id="toolbar">
+            <button onclick="save();" type="button" value="save">Save</button>
+            <button onclick="load();" type="button" value="load">Load</button>
+            <button onclick="export_as_png();" type="button" value="expo">Export as PNG</button>
+            |
+            <button onclick="undo();" type="button" value="undo">Undo</button>
+            <button onclick="redo();" type="button" value="load">Redo</button>
+        </div>
+        <div id="left-side">
+            <div id='canvas-wrapper'>
+                <canvas width="600" height="600" id="canvas" download>
+                    Error: canvas is not supported by this browser.
+                </canvas>
+            </div>
+
+            <div id='debug' class="section">
+                <h2>debug console</h2>
+                <table>
+                    <tbody>
+                        <tr><td><h3>mouse pressed = <span id='status'></span></h3></td><td><h3>mouse move</h3></td><td><h3>mouse released</h3></td></tr>
+                        <tr><td><span>x: </span><span id='mouse_pressed_x'></span></td><td><span>x: </span><span id='mouse_move_x'></span></td><td><span>x: </span><span id='mouse_released_x'></span></td></tr>
+                        <tr><td><span>y: </span><span id='mouse_pressed_y'></span></td><td><span>y: </span><span id='mouse_move_y'></span></td><td><span>y: </span><span id='mouse_released_y'></span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="tools">
+            <!-- 
+                <div id="tools-mistakes">
+                </div>
+            -->
+
+            <div id="tools-transformations" class="section">
+                <h2>transformations</h2>
+                <button onclick="select_mode = !select_mode; console.log(select_mode);" type="button" value="sele">Select</button>
+                <button onclick="set_current_tool(this.value); disable_current_button();" type="button" value="rota">Rotate</button>
+                <button onclick="set_current_tool(this.value); disable_current_button();" type="button" value="scal">Scale</button>
+                <button onclick="set_current_tool(this.value); disable_current_button();" type="button" value="tran">Translate</button>
+            </div>
+
+            <div id="tools-shapes" class="section">
+                <h2>shapes</h2>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="circ">Circle</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="curv">Curve</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="elli">Ellipse</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="line">Line</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="pgon">Polygon</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="plin">Poly-Line</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="rect">Rectangle</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="squa">Square</button>
+                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="tria">Triangle</button>
+            </div>
+
+            <div class="section">
+                <table>
+                    <tr>
+                        <td>
+                            <div id="tools-shape-size">
+                                <h2>shape size</h2>
+                                <div>
+                                    <input type='range' min='1' max='600' value='5' id='shape-size-range' onchange="display_size('range', this.value)"/>
+                                </div>
+                                <div>
+                                    <input type='text' value='10' id='shape-size-text' onchange="display_size('text', this.value)"/>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div id="tools-shape-fill">
+                                <h2>fill color</h2>
+                                <input type='text' id='shape-fill-text' onchange="set_current_fill(this.value)"/>
+                            </div>
+                        </td>
+                        <td>
+                            <div id="tools-shape-stroke">
+                                <h2>stroke color</h2>
+                                <input type='text' id='shape-stroke-text' onchange="set_current_stroke(this.value)"/>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
