@@ -1,8 +1,10 @@
 body {
     background-color: #303030;
     color: #ffffff;
-    margin: 0px;
     font-family: monospace;
+    margin: 0px;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 button {
@@ -48,7 +50,8 @@ td {
 }
 
 #left-side {
-    float: left;
+    left: 10px;
+    position: absolute;
 }
 
 #toolbar {
@@ -59,6 +62,7 @@ td {
 }
 
 #tools {
-    float: right;
+    position: absolute;
+    right: 10px;
     width: 50%;
 }

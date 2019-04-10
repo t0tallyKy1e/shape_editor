@@ -60,7 +60,7 @@ var Shape = {
 }
 
 class Circle {
-    constructor(x_origin, y_origin, radius = 1, trans_x, trans_y, stroke_color = '#000000', fill_color = '#000000') {
+    constructor(x_origin = 0, y_origin = 0, radius = 1, trans_x = 0, trans_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         this.x_origin = x_origin;
         this.y_origin = y_origin;
         this.radius = radius;
@@ -73,6 +73,7 @@ class Circle {
     draw = () => {
         switch(current_tool) {
             case 'rota':
+
                 break;
             case 'scal':
                 let temp_end = Math.abs(this.trans_x - this.x_origin) < Math.abs(this.trans_y - this.y_origin) ? Math.abs(this.trans_y - this.y_origin) : Math.abs(this.trans_x - this.x_origin);
@@ -83,7 +84,7 @@ class Circle {
             case 'tran':
                 let tran = Shape.translate(this.x_origin, this.y_origin, this.radius, this.radius, this.trans_x, this.trans_y);
                 
-                this.x_origin = tran[1][0][0];
+                this.x_origin = tran[1][0][0]; // since we're translating... use the coordinates from new_end
                 this.y_origin = tran[1][1][0];
                 
                 break;
@@ -120,9 +121,12 @@ class Circle {
         this.fill_color = json_circ.fill_color;
     }
 
+    save = () => {
+        drawn_shapes.push(['circ', this.toString()]);
+    }
+
     toJSON = () => {
         return {
-            shape: "circ",
             x_origin: this.x_origin,
             y_origin: this.y_origin,
             radius: this.radius,
@@ -133,8 +137,9 @@ class Circle {
         }
     }
 
-    save = () => {
-        drawn_shapes.push(this.toJSON());
+    toString = () => {
+        let jsonRep = this.toJSON();
+        return JSON.stringify(jsonRep);
     }
 }
 

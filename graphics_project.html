@@ -4,12 +4,12 @@
         <meta charset="utf-8"/>
         <title>Shape Editor</title>
         <link rel="stylesheet" type="text/css" href="main.css">
-        <script src="shape.js" type="application/javascript"></script>
+        <script src="shapes.js" type="application/javascript"></script>
         <script type="text/javascript">
             DEBUG = false;
             mouse_over_canvas = true;
             drawn_shapes = new Array();
-            page_margin_x = 30;
+            page_margin_x = 40;
             page_margin_y = 75;
             
             keys_pressed = new Array();
@@ -33,10 +33,6 @@
                 mouse_is_pressed = false;
                 set_current_shape(current_shape);
                 display_size();
-
-                // let temp_circ = new Circle();
-                // temp_circ.load('{"shape": "circ", "x_origin": 300, "y_origin": 300, "radius": 40, "trans_x": 320, "trans_y": 320, "stroke_color": "#000000", "fill_color": "#000000"}');
-                // temp_circ.draw();
             }
 
             clear_canvas = () => {
@@ -71,9 +67,8 @@
 
                     switch(current_shape) {
                         case "circ":
-                            // draw_circ(x_pressed, y_pressed, current_size, x_move, y_move);
-                            circ = new Circle(x_pressed, y_pressed, current_size / 2, x_move, y_move, current_stroke, current_fill);
-                            circ.draw();
+                            temp_shape = new Circle(x_pressed, y_pressed, current_size / 2, x_move, y_move, current_stroke, current_fill);
+                            temp_shape.draw();
                             break;
                         case "curv":
                             break;
@@ -113,10 +108,8 @@
 
                 mouse_is_pressed = false;
                 
-                save_shape();
-                drawn_shapes.push(circ);
-                console.log(drawn_shapes);
-                console.log(circ);
+                // save_shape();
+                temp_shape.save(); // test of save 
                 
                 document.getElementById('mouse_released_x').innerHTML = x_released;
                 document.getElementById('mouse_released_y').innerHTML = y_released;
@@ -194,6 +187,8 @@
                 temp_fill = current_fill;
                 temp_stroke = current_stroke;
 
+                console.log(drawn_shapes);
+
                 drawn_shapes.forEach((shape) => {
                     current_tool = shape[1];
                     current_fill = shape[3];
@@ -201,7 +196,10 @@
 
                     switch(shape[0]) {
                         case "circ":
-                            draw_circ(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4]);
+                            let temp_circ = new Circle();
+                            temp_circ.load(shape[1]);
+                            temp_circ.draw();
+                            // draw_circ(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4]);
                             break;
                         case "curv":
                             break;
@@ -331,11 +329,6 @@
             </div>
         </div>
         <div id="tools">
-            <!-- 
-                <div id="tools-mistakes">
-                </div>
-            -->
-
             <div id="tools-transformations" class="section">
                 <h2>transformations</h2>
                 <button onclick="select_mode = !select_mode; console.log(select_mode);" type="button" value="sele">Select</button>
@@ -358,7 +351,7 @@
             </div>
 
             <div class="section">
-                <table>
+                <table> <!-- GET RID OF THE TABLE LAYOUT-->
                     <tr>
                         <td>
                             <div id="tools-shape-size">
