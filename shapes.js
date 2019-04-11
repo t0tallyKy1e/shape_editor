@@ -473,3 +473,109 @@ class Square extends Rectangle {
         }
     }
 }
+
+class Triangle {
+    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+        this.x_origin = x_origin;
+        this.y_origin = y_origin;
+        this.width = width;
+        this.height = height;
+        this.stroke_color = stroke_color;
+        this.fill_color = fill_color;
+        this.mouse_x = mouse_x; // used to store x_move
+        this.mouse_y = mouse_y; // used to store y_move
+        this._shape_type = 'tria';
+    }
+
+    checkCollision = (mouseX, mouseY) => {
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
+    }
+
+    draw = () => {
+        switch(current_tool) {
+            case 'rota':
+                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+
+                break;
+            case 'scal':
+                this.width = this.mouse_x - this.x_origin;
+                this.height = this.mouse_y - this.y_origin;
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                let x_distance = this.mouse_x - this.x_origin;
+                let y_distance = this.mouse_y - this.y_origin;
+
+                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                
+                this.x_origin = tran[0][0];
+                this.y_origin = tran[1][0];
+                
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
+
+        // draw triangle
+        context.beginPath();
+        context.moveTo(this.x_origin, this.y_origin);
+        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
+        context.lineTo(this.x_origin, this.y_origin + this.height);
+        context.lineTo(this.x_origin, this.y_origin);
+        context.closePath();
+        //context.rect(this.x_origin, this.y_origin, this.width, this.height);
+    
+        // change fill color
+        context.fillStyle = this.fill_color;
+        context.fill();
+    
+        // change stroke color
+        context.strokeStyle = this.stroke_color;
+        context.stroke();
+    
+        if(DEBUG == true) {
+            console.log("triangle(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+        }
+    }
+
+    load = (rect) => {
+        let json_rect = JSON.parse(rect);
+        this.x_origin = json_rect.x_origin;
+        this.y_origin = json_rect.y_origin;
+        this.width = json_rect.width;
+        this.height = json_rect.height;
+        this.mouse_x = json_rect.mouse_x;
+        this.mouse_y = json_rect.mouse_y;
+        this.stroke_color = json_rect.stroke_color;
+        this.fill_color = json_rect.fill_color;
+    }
+
+    save = () => {
+        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
+            drawn_shapes.push([this._shape_type, this.toString()]);
+        } else {
+            drawn_shapes[0] = [this._shape_type, this.toString()];
+        }
+    }
+
+    toJSON = () => {
+        return {
+            x_origin: this.x_origin,
+            y_origin: this.y_origin,
+            width: this.width,
+            height: this.height,
+            mouse_x: this.mouse_x,
+            mouse_y: this.mouse_y,
+            stroke_color: this.stroke_color,
+            fill_color: this.fill_color,
+        }
+    }
+
+    toString = () => {
+        let jsonRep = this.toJSON();
+        return JSON.stringify(jsonRep);
+    }
+}

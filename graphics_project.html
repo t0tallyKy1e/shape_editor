@@ -97,7 +97,8 @@
                             temp_shape.draw();
                             break;
                         case "tria":
-                            draw_tria(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            temp_shape = new Triangle(x_pressed, y_pressed, current_size, current_size, x_move, y_move, current_stroke, current_fill);
+                            temp_shape.draw();
                             break;
                         default:
                             console.log("Error: no shape selected.");
@@ -254,7 +255,9 @@
                             temp_square.draw();
                             break;
                         case "tria":
-                            draw_tria(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            let temp_triangle = new Triangle();
+                            temp_triangle.load(shape[1]);
+                            temp_triangle.draw();
                             break;
                         default:
                             console.log("Error -> draw_previous(): no shape definition for " + shape[0] + ".");
