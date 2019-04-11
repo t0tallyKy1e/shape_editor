@@ -1,4 +1,4 @@
-var Shape_functions = {
+var ShapeFunctions = {
     rotate : (x, y, width, height, rotation) => {
         let rotation_matrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
         let origin_position_matrix = [[0], [0], [1]];
@@ -81,6 +81,10 @@ class Circle {
         this.trans_y = trans_y; // used to store y_move
     }
 
+    checkCollision = (mouseX, mouseY) => {
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + radius && mouseY >= this.y_origin && mouseY <= this.y_origin + radius;
+    }
+
     draw = () => {
         switch(current_tool) {
             case 'rota':
@@ -93,7 +97,7 @@ class Circle {
             case 'sele':
                 break;
             case 'tran':
-                let tran = Shape_functions.translate(this.x_origin, this.y_origin, this.radius, this.radius, this.trans_x, this.trans_y);
+                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, this.radius, this.radius, this.trans_x, this.trans_y);
                 
                 this.x_origin = tran[1][0][0]; // since we're translating... use the coordinates from new_end
                 this.y_origin = tran[1][1][0];
@@ -194,16 +198,8 @@ select = () => {
         let shape_found = false;
 
         for(let i = parseInt(drawn_shapes.length) - 1; i > 0 && !shape_found; --i) {
-            let x_min = drawn_shapes[i][2][0];
-            let x_max = x_min + drawn_shapes[i][2][2];
-            let y_min = drawn_shapes[i][2][1];
-            let y_max = y_min + drawn_shapes[i][2][2];
-
-            [x_max, x_min] = x_max < x_min ? [x_min, x_max] : [x_max, x_min]; // swap values if necessary
-
-            [y_max, y_min] = y_max < y_min ? [y_min, y_max] : [y_max, y_min]; // swap values if necessary
-
-            let collision = mx >= x_min && mx <= x_max && my >= y_min && my <= y_max ? true : false;
+            let temp_shape = new Circle();
+            let collision = drawn_shapes[i].checkCollision(mx, my);
 
             if(collision) {
                 shape_found = true;
