@@ -41,76 +41,66 @@ var ShapeFunctions = {
         // select
         // *** need to separate select from the rest of the tools probably
     },
-    
-    translate : (x, y, width, height, translate_x, translate_y) => {
+
+    translate : (x, y, translate_x, translate_y) => {
         let translation_matrix = [[1, 0, translate_x], [0, 1, translate_y], [0, 0, 1]];
-        let origin_position_matrix = [[x], [y], [1]];
-        let end_position_matrix = [[width], [height], [1]];
-    
-        let new_origin = matrix_mult(translation_matrix, origin_position_matrix);
-        let new_end = matrix_mult(translation_matrix, end_position_matrix);
-    
-        let matrix = [
-            new_origin,
-            new_end
-        ]
-    
-        return matrix;
-    },
+        let position_matrix = [[x], [y], [1]];
+        let new_position = matrix_mult(translation_matrix, position_matrix);
+
+        return new_position;
+    }
 }
 
-// class Shape {
-//     draw();
-//     load(shape); // JSON.parse(shape)... this.var = parsedShape.var
-//     save(); // drawn_shapes.push(['4_letter_shape_type', this.toString()]);
-//     toJSON();
-//     toString = () => {
-//         return JSON.stringify(this.toJSON());
-//     }
-// }
-
-
-class Circle {
-    constructor(x_origin = 0, y_origin = 0, radius = 1, trans_x = 0, trans_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+class Ellipse {
+    constructor(x_origin = 0, y_origin = 0, radius_x = 1, radius_y, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         this.x_origin = x_origin;
         this.y_origin = y_origin;
-        this.radius = radius;
+        this.radius_x = radius_x;
+        this.radius_y = radius_y;
         this.stroke_color = stroke_color;
         this.fill_color = fill_color;
-        this.trans_x = trans_x; // used to store x_move
-        this.trans_y = trans_y; // used to store y_move
+        this.mouse_x = mouse_x; // used to store x_move
+        this.mouse_y = mouse_y; // used to store y_move
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + radius && mouseY >= this.y_origin && mouseY <= this.y_origin + radius;
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + radius_x && mouseY >= this.y_origin && mouseY <= this.y_origin + radius_y;
     }
 
     draw = () => {
         switch(current_tool) {
             case 'rota':
+                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
 
                 break;
             case 'scal':
-                let temp_end = Math.abs(this.trans_x - this.x_origin) < Math.abs(this.trans_y - this.y_origin) ? Math.abs(this.trans_y - this.y_origin) : Math.abs(this.trans_x - this.x_origin);
-                this.radius = temp_end;
+                let temp_end_x = Math.abs(this.mouse_x - this.x_origin);
+                let temp_end_y = Math.abs(this.mouse_y - this.y_origin);
+                
+                this.radius_x = temp_end_x;
+                this.radius_y = temp_end_y;
+                
                 break;
             case 'sele':
                 break;
             case 'tran':
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, this.radius, this.radius, this.trans_x, this.trans_y);
+                let x_distance = this.mouse_x - this.x_origin;
+                let y_distance = this.mouse_y - this.y_origin;
+
+                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
                 
-                this.x_origin = tran[1][0][0]; // since we're translating... use the coordinates from new_end
-                this.y_origin = tran[1][1][0];
+                this.x_origin = tran[0][0];
+                this.y_origin = tran[1][0];
                 
                 break;
             default:
-                console.log("Circle.draw() Error: No tool selected.")
+                // hits this when drawing previously drawn shape
                 break;
         }
 
-        // draw circle
+        // draw ellipse
         context.beginPath();
-        context.arc(this.x_origin, this.y_origin, this.radius, 0, 2 * Math.PI);
+        context.ellipse(this.x_origin, this.y_origin, this.radius_x, this.radius_y, 0, 0, 2 * Math.PI);
     
         // change fill color
         context.fillStyle = this.fill_color;
@@ -121,7 +111,7 @@ class Circle {
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("circle(x = " + this.x_origin + ", y = " + this.y_origin + ", radius = " + this.radius + ")");
+            console.log("circle(x = " + this.x_origin + ", y = " + this.y_origin + ", radius_x = " + this.radius_x + ", radius_y = " + this.radius_y + ")");
         }
     }
 
@@ -129,18 +119,19 @@ class Circle {
         let json_circ = JSON.parse(circ);
         this.x_origin = json_circ.x_origin;
         this.y_origin = json_circ.y_origin;
-        this.radius = json_circ.radius;
-        this.trans_x = json_circ.trans_x;
-        this.trans_y = json_circ.trans_y;
+        this.radius_x = json_circ.radius_x;
+        this.radius_y = json_circ.radius_y;
+        this.mouse_x = json_circ.mouse_x;
+        this.mouse_y = json_circ.mouse_y;
         this.stroke_color = json_circ.stroke_color;
         this.fill_color = json_circ.fill_color;
     }
 
     save = () => {
         if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push(['circ', this.toString()]);
+            drawn_shapes.push(['elli', this.toString()]);
         } else {
-            drawn_shapes[0] = ['circ', this.toString()];
+            drawn_shapes[0] = ['elli', this.toString()];
         }
     }
 
@@ -148,9 +139,10 @@ class Circle {
         return {
             x_origin: this.x_origin,
             y_origin: this.y_origin,
-            radius: this.radius,
-            trans_x: this.trans_x,
-            trans_y: this.trans_y,
+            radius_x: this.radius_x,
+            radius_y: this.radius_y,
+            mouse_x: this.mouse_x,
+            mouse_y: this.mouse_y,
             stroke_color: this.stroke_color,
             fill_color: this.fill_color,
         }
@@ -162,369 +154,356 @@ class Circle {
     }
 }
 
+class Circle extends Ellipse {
+    constructor(x_origin = 0, y_origin = 0, radius = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+        super(x_origin, y_origin, radius, radius, mouse_x, mouse_y, stroke_color, fill_color);
+    }
 
+    draw = () => {
+        switch(current_tool) {
+            case 'rota':
+                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
 
-rotation = (x, y, width, height, rotation) => {
-    let rotation_matrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
-    let origin_position_matrix = [[0], [0], [1]];
-    let end_position_matrix = [[width-x], [height-y], [1]];
+                break;
+            case 'scal':
+                let temp_end = Math.abs(this.mouse_x - this.x_origin) > Math.abs(this.mouse_y - this.y_origin) ? Math.abs(this.mouse_x - this.x_origin) : Math.abs(this.mouse_y - this.y_origin);
+                
+                this.radius_x = temp_end;
+                this.radius_y = temp_end;
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                let x_distance = this.mouse_x - this.x_origin;
+                let y_distance = this.mouse_y - this.y_origin;
 
-    let new_origin = matrix_mult(rotation_matrix, origin_position_matrix);
-    let new_end = matrix_mult(rotation_matrix, end_position_matrix);
+                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                
+                this.x_origin = tran[0][0];
+                this.y_origin = tran[1][0];
+                
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
 
-    return translation(new_origin[0][0] + width, new_origin[1][0] + height, new_end[0][0], new_end[1][0], 0, 0);
-}
-
-translation = (x, y, width, height, translate_x, translate_y) => {
-    let translation_matrix = [[1, 0, translate_x], [0, 1, translate_y], [0, 0, 1]];
-    let origin_position_matrix = [[x], [y], [1]];
-    let end_position_matrix = [[width], [height], [1]];
-
-    let new_origin = matrix_mult(translation_matrix, origin_position_matrix);
-    let new_end = matrix_mult(translation_matrix, end_position_matrix);
-
-    let matrix = [
-        new_origin,
-        new_end
-    ]
-
-    return matrix;
-}
-
-select = () => {
-    if(mouse_is_pressed && select_mode && !!drawn_shapes) {
-        let mx = x_pressed;
-        let my = y_pressed;
-        let shape_found = false;
-
-        for(let i = parseInt(drawn_shapes.length) - 1; i > 0 && !shape_found; --i) {
-            let temp_shape = new Circle();
-            let collision = drawn_shapes[i].checkCollision(mx, my);
-
-            if(collision) {
-                shape_found = true;
-                console.log(x_min + " < " + mx + " < " + x_max);
-                console.log(y_min + " < " + my + " < " + y_max);
-                console.log(drawn_shapes[i]);
-            }
+        // draw circle
+        context.beginPath();
+        context.ellipse(this.x_origin, this.y_origin, this.radius_x, this.radius_y, 0, 0, 2 * Math.PI);
+    
+        // change fill color
+        context.fillStyle = this.fill_color;
+        context.fill();
+    
+        // change stroke color
+        context.strokeStyle = this.stroke_color;
+        context.stroke();
+    
+        if(DEBUG == true) {
+            console.log("circle(x = " + this.x_origin + ", y = " + this.y_origin + ", radius_x = " + this.radius_x + ", radius_y = " + this.radius_y + ")");
         }
     }
-    // start at top of array...
-    // if mouse is within boundaries of shape... 
-    // select
-    // *** need to separate select from the rest of the tools probably
 }
 
-
-
-// CIRCLE
-draw_circ = (x, y, size, trans_x, trans_y) => {
-    switch(current_tool) {
-        case 'tran':
-            tran = translation(trans_x, trans_y, size / 2, size / 2, 0, 0);
-
-            x = tran[0][0][0];
-            y = tran[0][1][0];
-            radius = size / 2;
-
-            break;
-        
-        case 'rota':
-            let rot = calculate_rotation(x, y, trans_x, trans_y);
-
-            break;
-
-        case 'scal':
-            let temp_end = Math.abs(trans_x - x) < Math.abs(trans_y - y) ? Math.abs(trans_y - y) : Math.abs(trans_x - x);
-            radius = temp_end;
-            break;
-
-        case 'sele':
-            break;
-
-        default:
-            console.log("ERROR -> draw_circ(): no tool selected.");
-            break;
+class Line {
+    constructor(x_origin = 0, y_origin = 0, x_end = 1, y_end = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000') {
+        this.x_origin = x_origin;
+        this.y_origin = y_origin;
+        this.x_end = x_end;
+        this.y_end = y_end;
+        this.stroke_color = stroke_color;
+        this.mouse_x = mouse_x; // used to store x_move
+        this.mouse_y = mouse_y; // used to store y_move
     }
 
-    // draw circle
-    context.beginPath();
-    context.arc(x, y, radius, 0, 2 * Math.PI);
-
-    // change fill color
-    context.fillStyle = current_fill;
-    context.fill();
-
-    // change stroke color
-    context.strokeStyle = current_stroke;
-    context.stroke();
-
-    if(DEBUG == true) {
-        console.log("circle(x = " + x + ", y = " + y + ", radius = " + radius + ")");
+    checkCollision = (mouseX, mouseY) => {
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + x_end && mouseY >= this.y_origin && mouseY <= this.y_origin + y_end;
     }
 
-    temp_shape = ['circ', current_tool, [x, y, size, trans_x, trans_y], current_fill, current_stroke];
+    draw = () => {
+        switch(current_tool) {
+            case 'rota':
+                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+
+                break;
+            case 'scal':
+                this.x_end = this.mouse_x;
+                this.y_end = this.mouse_y;
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                let x_distance = this.mouse_x - this.x_origin;
+                let y_distance = this.mouse_y - this.y_origin;
+                
+                let tran_origin = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                let tran_end = ShapeFunctions.translate(this.x_end, this.y_end, x_distance, y_distance);
+                
+                [this.x_origin, this.y_origin] = [tran_origin[0][0], tran_origin[1][0]];
+                [this.x_end, this.y_end] = [tran_end[0][0], tran_end[1][0]];
+                
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
+
+        // draw line
+        context.beginPath();
+        context.moveTo(this.x_origin, this.y_origin);
+        context.lineTo(this.x_end, this.y_end);
+        context.closePath();
+    
+        // change stroke color
+        context.strokeStyle = this.stroke_color;
+        context.stroke();
+    
+        if(DEBUG == true) {
+            console.log("line(x = " + this.x_origin + ", y = " + this.y_origin + ", x_end = " + this.x_end + ", y_end = " + this.y_end + ")");
+        }
+    }
+
+    load = (rect) => {
+        let json_rect = JSON.parse(rect);
+        this.x_origin = json_rect.x_origin;
+        this.y_origin = json_rect.y_origin;
+        this.x_end = json_rect.x_end;
+        this.y_end = json_rect.y_end;
+        this.mouse_x = json_rect.mouse_x;
+        this.mouse_y = json_rect.mouse_y;
+        this.stroke_color = json_rect.stroke_color;
+    }
+
+    save = () => {
+        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
+            drawn_shapes.push(['line', this.toString()]);
+        } else {
+            drawn_shapes[0] = ['line', this.toString()];
+        }
+    }
+
+    toJSON = () => {
+        return {
+            x_origin: this.x_origin,
+            y_origin: this.y_origin,
+            x_end: this.x_end,
+            y_end: this.y_end,
+            mouse_x: this.mouse_x,
+            mouse_y: this.mouse_y,
+            stroke_color: this.stroke_color
+        }
+    }
+
+    toString = () => {
+        let jsonRep = this.toJSON();
+        return JSON.stringify(jsonRep);
+    }
 }
 
-// ELLIPSE
-draw_elli = (x, y, size_x, size_y, trans_x, trans_y) => {
-    switch(current_tool) {
-        case 'rota':
-            break;
-
-        case 'scal':
-            let temp_end_x = Math.abs(trans_x - x);
-            let temp_end_y = Math.abs(trans_y - y);
-            radius_x = temp_end_x;
-            radius_y = temp_end_y;
-
-            break;
-
-        case 'sele':
-            break;
-
-        case 'tran':
-            tran = translation(trans_x, trans_y, size_x / 2, size_y / 2, 0, 0);
-
-            x = tran[0][0][0];
-            y = tran[0][1][0];
-            radius_x = size_x / 2;
-            radius_y = size_y / 2;
-
-            break;
-        
-        default:
-            console.log("ERROR -> draw_elli(): no tool selected.");
-            break;
+class Rectangle {
+    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+        this.x_origin = x_origin;
+        this.y_origin = y_origin;
+        this.width = width;
+        this.height = height;
+        this.stroke_color = stroke_color;
+        this.fill_color = fill_color;
+        this.mouse_x = mouse_x; // used to store x_move
+        this.mouse_y = mouse_y; // used to store y_move
     }
 
-    // draw ellipse
-    context.beginPath();
-    context.ellipse(x, y, radius_x, radius_y, 0, 0, 2 * Math.PI);
-
-    // change fill color
-    context.fillStyle = current_fill;
-    context.fill();
-
-    // change stroke color
-    context.strokeStyle = current_stroke;
-    context.stroke();
-
-    if(DEBUG == true) {
-        console.log("ellipse(x = " + x + ", y = " + y + ", radius_x = " + radius_x + ", radius_y = " + radius_y + ")");
+    checkCollision = (mouseX, mouseY) => {
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
     }
 
-    temp_shape = ['elli', current_tool, [x, y, size_x, size_y, trans_x, trans_y], current_fill, current_stroke];
+    draw = () => {
+        switch(current_tool) {
+            case 'rota':
+                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+
+                break;
+            case 'scal':
+                this.width = this.mouse_x - this.x_origin;
+                this.height = this.mouse_y - this.y_origin;
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                let x_distance = this.mouse_x - this.x_origin;
+                let y_distance = this.mouse_y - this.y_origin;
+
+                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                
+                this.x_origin = tran[0][0];
+                this.y_origin = tran[1][0];
+                
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
+
+        // draw rectangle
+        context.beginPath();
+        context.moveTo(this.x_origin, this.y_origin);
+        context.lineTo(this.x_origin + this.width, this.y_origin);
+        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
+        context.lineTo(this.x_origin, this.y_origin +this.height);
+        context.closePath();
+        //context.rect(this.x_origin, this.y_origin, this.width, this.height);
+    
+        // change fill color
+        context.fillStyle = this.fill_color;
+        context.fill();
+    
+        // change stroke color
+        context.strokeStyle = this.stroke_color;
+        context.stroke();
+    
+        if(DEBUG == true) {
+            console.log("rect(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+        }
+    }
+
+    load = (rect) => {
+        let json_rect = JSON.parse(rect);
+        this.x_origin = json_rect.x_origin;
+        this.y_origin = json_rect.y_origin;
+        this.width = json_rect.width;
+        this.height = json_rect.height;
+        this.mouse_x = json_rect.mouse_x;
+        this.mouse_y = json_rect.mouse_y;
+        this.stroke_color = json_rect.stroke_color;
+        this.fill_color = json_rect.fill_color;
+    }
+
+    save = () => {
+        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
+            drawn_shapes.push(['rect', this.toString()]);
+        } else {
+            drawn_shapes[0] = ['rect', this.toString()];
+        }
+    }
+
+    toJSON = () => {
+        return {
+            x_origin: this.x_origin,
+            y_origin: this.y_origin,
+            width: this.width,
+            height: this.height,
+            mouse_x: this.mouse_x,
+            mouse_y: this.mouse_y,
+            stroke_color: this.stroke_color,
+            fill_color: this.fill_color,
+        }
+    }
+
+    toString = () => {
+        let jsonRep = this.toJSON();
+        return JSON.stringify(jsonRep);
+    }
 }
 
-// LINE
-draw_line = (x, y, size_x, size_y, end_x, end_y) => {
-    switch(current_tool) {
-        case 'tran':
-            tran = translation(end_x, end_y, end_x + size_x, end_y + size_y, 0, 0);
-
-            x = end_x;
-            y = end_y;
-
-            end_x = x + size_x;
-            end_y = y + size_y;
-
-            break;
-
-        case 'rota':
-            let rot = calculate_rotation(x, y, trans_x, trans_y);
-            let rot_matrix = rotation(x, y, trans_x, trans_y, rot);
-
-            console.log(rot_matrix);
-
-            x = rot_matrix[0][0][0];
-            y = rot_matrix[0][1][0];
-
-            end_x = rot_matrix[1][0][0];
-            end_y = rot_matrix[1][1][0];
-
-            if(DEBUG) {
-                console.log("rotation: " + radians_to_degrees(rot));
-            }
-
-            break;
-
-        case 'scal':
-            end_x = trans_x;
-            end_y = trans_y;
-
-            break;
-        
-        default:
-            console.log("ERROR -> draw_line(): no tool selected.");
-            break;
+class Square {
+    constructor(x_origin = 0, y_origin = 0, size = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+        this.x_origin = x_origin;
+        this.y_origin = y_origin;
+        this.size = size;
+        this.stroke_color = stroke_color;
+        this.fill_color = fill_color;
+        this.mouse_x = mouse_x; // used to store x_move
+        this.mouse_y = mouse_y; // used to store y_move
     }
 
-    // draw line
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(end_x, end_y);
-    context.closePath();
-
-    // change fill color
-    context.fillStyle = current_fill;
-    context.fill();
-
-    // change stroke color
-    context.strokeStyle = current_stroke;
-    context.stroke();
-
-    if(DEBUG == true) {
-        console.log("line(x = " + x + ", y = " + y + ", end_x = " + end_x + ", end_y = " + end_y + ")");
+    checkCollision = (mouseX, mouseY) => {
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + this.size && mouseY >= this.y_origin && mouseY <= this.y_origin + this.height;
     }
 
-    temp_shape = ['line', current_tool, [x, y, size_x, size_y, end_x, end_y], current_fill, current_stroke];
-}
+    draw = () => {
+        switch(current_tool) {
+            case 'rota':
+                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
 
-// RECTANGLE
-draw_rect = (x, y, width, height, trans_x, trans_y) => {
-    switch(current_tool) {
-        case 'rota':
-            break;
+                break;
+            case 'scal':
+                this.size = this.mouse_x - this.x_origin > this.mouse_y - this.y_origin ? this.mouse_x - this.x_origin : this.mouse_y - this.y_origin;
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                let x_distance = this.mouse_x - this.x_origin;
+                let y_distance = this.mouse_y - this.y_origin;
 
-        case 'scal':
-            let temp_end_x = trans_x - x;
-            let temp_end_y = trans_y - y;
-            width = temp_end_x;
-            height = temp_end_y;
+                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                
+                this.x_origin = tran[0][0];
+                this.y_origin = tran[1][0];
+                
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
 
-            break;
-
-        case 'sele':
-            break;
-
-        case 'tran':
-            tran = translation(trans_x, trans_y, width, height, 0, 0);
-
-            x = tran[0][0][0];
-            y = tran[0][1][0];
-            width = tran[1][0][0];
-            height = tran[1][1][0];
-            break;
-        
-        default:
-            console.log("ERROR -> draw_rect(): no tool selected.");
-            break;
+        // draw square
+        context.beginPath();
+        context.moveTo(this.x_origin, this.y_origin);
+        context.lineTo(this.x_origin + this.size, this.y_origin);
+        context.lineTo(this.x_origin + this.size, this.y_origin + this.size);
+        context.lineTo(this.x_origin, this.y_origin +this.size);
+        context.closePath();
+    
+        // change fill color
+        context.fillStyle = this.fill_color;
+        context.fill();
+    
+        // change stroke color
+        context.strokeStyle = this.stroke_color;
+        context.stroke();
+    
+        if(DEBUG == true) {
+            console.log("square(x = " + this.x_origin + ", y = " + this.y_origin + ", size = " + this.size + ")");
+        }
     }
 
-    // draw rectangle
-    context.rect(x, y, width, height);
-
-    // change fill color
-    context.fillStyle = current_fill;
-    context.fill();
-
-    // change stroke color
-    context.strokeStyle = current_stroke;
-    context.stroke();
-
-    if(DEBUG == true) {
-        console.log("rect(x = " + x + ", y = " + y + ", width = " + width + ", height = " + height + ")");
+    load = (rect) => {
+        let json_rect = JSON.parse(rect);
+        this.x_origin = json_rect.x_origin;
+        this.y_origin = json_rect.y_origin;
+        this.size = json_rect.size;
+        this.mouse_x = json_rect.mouse_x;
+        this.mouse_y = json_rect.mouse_y;
+        this.stroke_color = json_rect.stroke_color;
+        this.fill_color = json_rect.fill_color;
     }
 
-    temp_shape = ['rect', current_tool, [x, y, width, height, trans_x, trans_y], current_fill, current_stroke];
-}
-
-// SQUARE
-draw_squa = (x, y, size, trans_x, trans_y) => {
-    switch(current_tool) {
-        case 'rota':
-            break;
-
-        case 'scal':
-            let temp_end = Math.abs(trans_x - x) < Math.abs(trans_y - y) ? trans_y - y : trans_x - x;
-
-            size = temp_end;
-
-            break;
-
-        case 'sele':
-            break;
-
-        case 'tran':
-            tran = translation(trans_x, trans_y, size, size, 0, 0);
-
-            x = tran[0][0][0];
-            y = tran[0][1][0];
-            width = tran[1][0][0];
-            height = tran[1][1][0];
-            break;
-        
-        default:
-            console.log("ERROR -> draw_squa(): no tool selected.");
-            break;
+    save = () => {
+        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
+            drawn_shapes.push(['squa', this.toString()]);
+        } else {
+            drawn_shapes[0] = ['squa', this.toString()];
+        }
     }
 
-    // draw rectangle
-    context.rect(x, y, size, size);
-
-    // change fill color
-    context.fillStyle = current_fill;
-    context.fill();
-
-    // change stroke color
-    context.strokeStyle = current_stroke;
-    context.stroke();
-
-    if(DEBUG == true) {
-        console.log("squa(x = " + x + ", y = " + y + ", size = " + size + ")");
+    toJSON = () => {
+        return {
+            x_origin: this.x_origin,
+            y_origin: this.y_origin,
+            size: this.size,
+            mouse_x: this.mouse_x,
+            mouse_y: this.mouse_y,
+            stroke_color: this.stroke_color,
+            fill_color: this.fill_color,
+        }
     }
 
-    temp_shape = ['squa', current_tool, [x, y, size, trans_x, trans_y], current_fill, current_stroke];
-}
-
-// TRIANGLE
-draw_tria = (x, y, size_x, size_y, trans_x, trans_y) => {
-    switch(current_tool) {
-        case 'rota':
-            break;
-
-        case 'scal':
-            let temp_end = Math.abs(trans_x - x) < Math.abs(trans_y - y) ? trans_y - y : trans_x - x;
-
-            size_x = trans_x - x;
-            size_y = trans_y - y;
-
-            break;
-
-        case 'sele':
-            break;
-
-        case 'tran':
-            tran = translation(trans_x, trans_y, size_x, size_y, 0, 0);
-
-            x = tran[0][0][0];
-            y = tran[0][1][0];
-            break;
-        
-        default:
-            console.log("ERROR -> draw_rect(): no tool selected.");
-            break;
+    toString = () => {
+        let jsonRep = this.toJSON();
+        return JSON.stringify(jsonRep);
     }
-
-    // draw triangle
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x + size_x, y + size_y);
-    context.lineTo(x, y + size_y);
-    context.closePath();
-
-    // change fill color
-    context.fillStyle = current_fill;
-    context.fill();
-
-    // change stroke color
-    context.strokeStyle = current_stroke;
-    context.stroke();
-
-    if(DEBUG == true) {
-        console.log("tria(x = " + x + ", y = " + y + ", size_x = " + size_x + ", size_y = " + size_y + ")");
-    }
-
-    temp_shape = ['tria', current_tool, [x, y, size_x, size_y, trans_x, trans_y], current_fill, current_stroke];
 }

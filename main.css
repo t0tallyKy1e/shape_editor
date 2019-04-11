@@ -38,6 +38,10 @@ button:disabled {
     cursor: not-allowed;
 }
 
+button:disabled:hover {
+    box-shadow: none;
+}
+
 button:focus {
     outline: none;
 }

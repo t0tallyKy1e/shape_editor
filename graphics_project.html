@@ -7,6 +7,7 @@
         <script src="shapes.js" type="application/javascript"></script>
         <script type="text/javascript">
             DEBUG = false;
+
             mouse_over_canvas = true;
             drawn_shapes = new Array();
             page_margin_x = 40;
@@ -76,20 +77,24 @@
                         case "curv":
                             break;
                         case "elli":
-                            draw_elli(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            temp_shape = new Ellipse(x_pressed, y_pressed, current_size / 2, current_size / 2, x_move, y_move, current_stroke);
+                            temp_shape.draw();
                             break;
                         case "line":
-                            draw_line(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            temp_shape = new Line(x_pressed, y_pressed, x_pressed + current_size, y_pressed + current_size, x_move, y_move, current_stroke);
+                            temp_shape.draw();
                             break;
                         case "pgon":
                             break;
                         case "plin":
                             break;
                         case "rect":
-                            draw_rect(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
+                            temp_shape = new Rectangle(x_pressed, y_pressed, current_size, current_size, x_move, y_move, current_stroke, current_fill);
+                            temp_shape.draw();
                             break;
                         case "squa":
-                            draw_squa(x_pressed, y_pressed, current_size, x_move, y_move);
+                            temp_shape = new Square(x_pressed, y_pressed, current_size, x_move, y_move, current_stroke, current_fill);
+                            temp_shape.draw();
                             break;
                         case "tria":
                             draw_tria(x_pressed, y_pressed, current_size, current_size, x_move, y_move);
@@ -225,20 +230,28 @@
                         case "curv":
                             break;
                         case "elli":
-                            draw_elli(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            let temp_elli = new Ellipse();
+                            temp_elli.load(shape[1]);
+                            temp_elli.draw();
                             break;
                         case "line":
-                            draw_line(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            let temp_line = new Line();
+                            temp_line.load(shape[1]);
+                            temp_line.draw();
                             break;
                         case "pgon":
                             break;
                         case "plin":
                             break;
                         case "rect":
-                            draw_rect(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
+                            let temp_rect = new Rectangle();
+                            temp_rect.load(shape[1]);
+                            temp_rect.draw();
                             break;
                         case "squa":
-                            draw_squa(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4]);
+                            let temp_square = new Square();
+                            temp_square.load(shape[1]);
+                            temp_square.draw();
                             break;
                         case "tria":
                             draw_tria(shape[2][0], shape[2][1], shape[2][2], shape[2][3], shape[2][4], shape[2][5]);
