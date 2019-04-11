@@ -61,6 +61,7 @@ class Ellipse {
         this.fill_color = fill_color;
         this.mouse_x = mouse_x; // used to store x_move
         this.mouse_y = mouse_y; // used to store y_move
+        this._shape_type = 'elli';
     }
 
     checkCollision = (mouseX, mouseY) => {
@@ -129,9 +130,9 @@ class Ellipse {
 
     save = () => {
         if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push(['elli', this.toString()]);
+            drawn_shapes.push([this._shape_type, this.toString()]);
         } else {
-            drawn_shapes[0] = ['elli', this.toString()];
+            drawn_shapes[0] = [this._shape_type, this.toString()];
         }
     }
 
@@ -157,6 +158,7 @@ class Ellipse {
 class Circle extends Ellipse {
     constructor(x_origin = 0, y_origin = 0, radius = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, radius, radius, mouse_x, mouse_y, stroke_color, fill_color);
+        this._shape_type = 'circ';
     }
 
     draw = () => {
@@ -216,6 +218,7 @@ class Line {
         this.stroke_color = stroke_color;
         this.mouse_x = mouse_x; // used to store x_move
         this.mouse_y = mouse_y; // used to store y_move
+        this._shape_type = 'line';
     }
 
     checkCollision = (mouseX, mouseY) => {
@@ -279,9 +282,9 @@ class Line {
 
     save = () => {
         if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push(['line', this.toString()]);
+            drawn_shapes.push([this._shape_type, this.toString()]);
         } else {
-            drawn_shapes[0] = ['line', this.toString()];
+            drawn_shapes[0] = [this._shape_type, this.toString()];
         }
     }
 
@@ -313,6 +316,7 @@ class Rectangle {
         this.fill_color = fill_color;
         this.mouse_x = mouse_x; // used to store x_move
         this.mouse_y = mouse_y; // used to store y_move
+        this._shape_type = 'rect';
     }
 
     checkCollision = (mouseX, mouseY) => {
@@ -383,9 +387,9 @@ class Rectangle {
 
     save = () => {
         if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push(['rect', this.toString()]);
+            drawn_shapes.push([this._shape_type, this.toString()]);
         } else {
-            drawn_shapes[0] = ['rect', this.toString()];
+            drawn_shapes[0] = [this._shape_type, this.toString()];
         }
     }
 
@@ -408,19 +412,10 @@ class Rectangle {
     }
 }
 
-class Square {
+class Square extends Rectangle {
     constructor(x_origin = 0, y_origin = 0, size = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        this.x_origin = x_origin;
-        this.y_origin = y_origin;
-        this.size = size;
-        this.stroke_color = stroke_color;
-        this.fill_color = fill_color;
-        this.mouse_x = mouse_x; // used to store x_move
-        this.mouse_y = mouse_y; // used to store y_move
-    }
-
-    checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + this.size && mouseY >= this.y_origin && mouseY <= this.y_origin + this.height;
+        super(x_origin, y_origin, size, size, mouse_x, mouse_y, stroke_color, fill_color);
+        this._shape_type = 'squa';
     }
 
     draw = () => {
@@ -430,7 +425,14 @@ class Square {
 
                 break;
             case 'scal':
-                this.size = this.mouse_x - this.x_origin > this.mouse_y - this.y_origin ? this.mouse_x - this.x_origin : this.mouse_y - this.y_origin;
+                this.width = this.mouse_x - this.x_origin > this.mouse_y - this.y_origin ? this.mouse_x - this.x_origin : this.mouse_y - this.y_origin;
+                this.height = this.width;
+
+                if(this.mouse_x > this.x_origin && this.mouse_y < this.y_origin) {
+                    this.height *= -1;
+                } else if(this.mouse_x < this.x_origin && this.mouse_y > this.y_origin) {
+                    this.width *= -1;
+                }
                 
                 break;
             case 'sele':
@@ -453,9 +455,9 @@ class Square {
         // draw square
         context.beginPath();
         context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.x_origin + this.size, this.y_origin);
-        context.lineTo(this.x_origin + this.size, this.y_origin + this.size);
-        context.lineTo(this.x_origin, this.y_origin +this.size);
+        context.lineTo(this.x_origin + this.width, this.y_origin);
+        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
+        context.lineTo(this.x_origin, this.y_origin + this.height);
         context.closePath();
     
         // change fill color
@@ -467,43 +469,7 @@ class Square {
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("square(x = " + this.x_origin + ", y = " + this.y_origin + ", size = " + this.size + ")");
+            console.log("square(x = " + this.x_origin + ", y = " + this.y_origin + ", size = " + this.width + ")");
         }
-    }
-
-    load = (rect) => {
-        let json_rect = JSON.parse(rect);
-        this.x_origin = json_rect.x_origin;
-        this.y_origin = json_rect.y_origin;
-        this.size = json_rect.size;
-        this.mouse_x = json_rect.mouse_x;
-        this.mouse_y = json_rect.mouse_y;
-        this.stroke_color = json_rect.stroke_color;
-        this.fill_color = json_rect.fill_color;
-    }
-
-    save = () => {
-        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push(['squa', this.toString()]);
-        } else {
-            drawn_shapes[0] = ['squa', this.toString()];
-        }
-    }
-
-    toJSON = () => {
-        return {
-            x_origin: this.x_origin,
-            y_origin: this.y_origin,
-            size: this.size,
-            mouse_x: this.mouse_x,
-            mouse_y: this.mouse_y,
-            stroke_color: this.stroke_color,
-            fill_color: this.fill_color,
-        }
-    }
-
-    toString = () => {
-        let jsonRep = this.toJSON();
-        return JSON.stringify(jsonRep);
     }
 }
