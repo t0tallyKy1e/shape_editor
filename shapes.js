@@ -270,20 +270,14 @@ class Circle extends Ellipse {
     }
 }
 
-class Line {
-    constructor(x_origin = 0, y_origin = 0, x_end = 1, y_end = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000') {
-        this.x_origin = x_origin;
-        this.y_origin = y_origin;
-        this.x_end = x_end;
-        this.y_end = y_end;
-        this.stroke_color = stroke_color;
-        this.mouse_x = mouse_x; // used to store x_move
-        this.mouse_y = mouse_y; // used to store y_move
+class Line extends Shape {
+    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+        super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
         this._shape_type = 'line';
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + x_end && mouseY >= this.y_origin && mouseY <= this.y_origin + y_end;
+        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
     }
 
     draw = () => {
@@ -293,8 +287,8 @@ class Line {
 
                 break;
             case 'scal':
-                this.x_end = this.mouse_x;
-                this.y_end = this.mouse_y;
+                this.width = this.mouse_x;
+                this.height = this.mouse_y;
                 
                 break;
             case 'sele':
@@ -304,10 +298,10 @@ class Line {
                 let y_distance = this.mouse_y - this.y_origin;
                 
                 let tran_origin = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
-                let tran_end = ShapeFunctions.translate(this.x_end, this.y_end, x_distance, y_distance);
+                let tran_end = ShapeFunctions.translate(this.width, this.height, x_distance, y_distance);
                 
                 [this.x_origin, this.y_origin] = [tran_origin[0][0], tran_origin[1][0]];
-                [this.x_end, this.y_end] = [tran_end[0][0], tran_end[1][0]];
+                [this.width, this.height] = [tran_end[0][0], tran_end[1][0]];
                 
                 break;
             default:
@@ -318,7 +312,7 @@ class Line {
         // draw line
         context.beginPath();
         context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.x_end, this.y_end);
+        context.lineTo(this.width, this.height);
         context.closePath();
     
         // change stroke color
@@ -326,44 +320,8 @@ class Line {
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("line(x = " + this.x_origin + ", y = " + this.y_origin + ", x_end = " + this.x_end + ", y_end = " + this.y_end + ")");
+            console.log("line(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
         }
-    }
-
-    load = (rect) => {
-        let json_rect = JSON.parse(rect);
-        this.x_origin = json_rect.x_origin;
-        this.y_origin = json_rect.y_origin;
-        this.x_end = json_rect.x_end;
-        this.y_end = json_rect.y_end;
-        this.mouse_x = json_rect.mouse_x;
-        this.mouse_y = json_rect.mouse_y;
-        this.stroke_color = json_rect.stroke_color;
-    }
-
-    save = () => {
-        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push([this._shape_type, this.toString()]);
-        } else {
-            drawn_shapes[0] = [this._shape_type, this.toString()];
-        }
-    }
-
-    toJSON = () => {
-        return {
-            x_origin: this.x_origin,
-            y_origin: this.y_origin,
-            x_end: this.x_end,
-            y_end: this.y_end,
-            mouse_x: this.mouse_x,
-            mouse_y: this.mouse_y,
-            stroke_color: this.stroke_color
-        }
-    }
-
-    toString = () => {
-        let jsonRep = this.toJSON();
-        return JSON.stringify(jsonRep);
     }
 }
 
