@@ -19,10 +19,10 @@
             const z_key = 90;
 
             current_fill = '#000000';
-            current_shape = 'circ';
+            current_shape = 'line';
             current_size = 0;
             current_stroke = '#000000';
-            current_tool = 'tran';
+            current_tool = 'rota';
             select_mode = false;
             dark_mode = true;
 
@@ -38,6 +38,8 @@
                 display_size();
                 disable_current_button();
                 darkMode();
+                set_current_fill();
+                set_current_stroke();
             }
 
             clear_canvas = () => {
@@ -197,6 +199,12 @@
                         buttons[i].disabled = false;
                     }
                 }
+
+                if(dark_mode) {
+                    darkMode();
+                } else {
+                    lightMode();
+                }
             }
 
 
@@ -222,25 +230,23 @@
 
                 drawn_shapes.forEach((shape) => {
                     current_tool = shape[1];
-                    current_fill = shape[3];
-                    current_stroke = shape[4];
 
                     switch(shape[0]) {
                         case "circ":
                             let temp_circ = new Circle();
-                            temp_circ.load(shape[1]);
+                            temp_circ.load(shape[2]);
                             temp_circ.draw();
                             break;
                         case "curv":
                             break;
                         case "elli":
                             let temp_elli = new Ellipse();
-                            temp_elli.load(shape[1]);
+                            temp_elli.load(shape[2]);
                             temp_elli.draw();
                             break;
                         case "line":
                             let temp_line = new Line();
-                            temp_line.load(shape[1]);
+                            temp_line.load(shape[2]);
                             temp_line.draw();
                             break;
                         case "pgon":
@@ -249,17 +255,17 @@
                             break;
                         case "rect":
                             let temp_rect = new Rectangle();
-                            temp_rect.load(shape[1]);
+                            temp_rect.load(shape[2]);
                             temp_rect.draw();
                             break;
                         case "squa":
                             let temp_square = new Square();
-                            temp_square.load(shape[1]);
+                            temp_square.load(shape[2]);
                             temp_square.draw();
                             break;
                         case "tria":
                             let temp_triangle = new Triangle();
-                            temp_triangle.load(shape[1]);
+                            temp_triangle.load(shape[2]);
                             temp_triangle.draw();
                             break;
                         default:
@@ -329,6 +335,10 @@
                 // blue bar
                 let bluebar = document.getElementById("blue-bar");
                 bluebar.style.color = "#448AFF";
+
+                // shape size input
+                let shape_size_input = document.getElementById('shape-size-text');
+                shape_size_input.style.border = "none";
 
                 // toolbar
                 let toolbar = document.getElementById("toolbar");
@@ -405,6 +415,12 @@
                         button_elements[i].style.color = "#000000";
                     }
                 }
+
+                // shape size input
+                let shape_size_input = document.getElementById('shape-size-text');
+                shape_size_input.style.borderWidth = "1px";
+                shape_size_input.style.borderColor = "#448AFF";
+                shape_size_input.style.borderStyle = "solid";
                 
                 // section
                 let sections = document.getElementsByClassName('section');
@@ -507,7 +523,7 @@
                 <h2>debug console</h2>
                 <table>
                     <tbody>
-                        <tr><td><h3>mouse pressed = <span id='status'></span></h3></td><td><h3>mouse move</h3></td><td><h3>mouse released</h3></td></tr>
+                        <tr><td><h3>mouse pressed = <span id='status'></span></h3></td><td><h3>mouse move</h3></td><td><h3>mouse released</h3></td><td><h3>rotation = <span id='rotation'></span></h3></td></tr>
                         <tr><td><span>x: </span><span id='mouse_pressed_x'></span></td><td><span>x: </span><span id='mouse_move_x'></span></td><td><span>x: </span><span id='mouse_released_x'></span></td></tr>
                         <tr><td><span>y: </span><span id='mouse_pressed_y'></span></td><td><span>y: </span><span id='mouse_move_y'></span></td><td><span>y: </span><span id='mouse_released_y'></span></td></tr>
                     </tbody>

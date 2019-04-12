@@ -1,13 +1,11 @@
 var ShapeFunctions = {
-    rotate : (x, y, width, height, rotation) => {
+    rotate : (x, y, rotation) => {
         let rotation_matrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
-        let origin_position_matrix = [[0], [0], [1]];
-        let end_position_matrix = [[width-x], [height-y], [1]];
+        let origin_position_matrix = [[x], [y], [1]];
     
-        let new_origin = matrix_mult(rotation_matrix, origin_position_matrix);
-        let new_end = matrix_mult(rotation_matrix, end_position_matrix);
+        let new_position = matrix_mult(rotation_matrix, origin_position_matrix);
     
-        return translation(new_origin[0][0] + width, new_origin[1][0] + height, new_end[0][0], new_end[1][0], 0, 0);
+        return new_position;
     },
     
     select : () => {
@@ -72,6 +70,7 @@ class Shape {
         switch(current_tool) {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 break;
             case 'scal':
@@ -132,9 +131,9 @@ class Shape {
 
     save = () => {
         if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push([this._shape_type, this.toString()]);
+            drawn_shapes.push([this._shape_type, current_tool, this.toString()]);
         } else {
-            drawn_shapes[0] = [this._shape_type, this.toString()];
+            drawn_shapes[0] = [this._shape_type, current_tool, this.toString()];
         }
     }
 
@@ -171,6 +170,7 @@ class Ellipse extends Shape {
         switch(current_tool) {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 break;
             case 'scal':
@@ -226,6 +226,7 @@ class Circle extends Ellipse {
         switch(current_tool) {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 break;
             case 'scal':
@@ -283,7 +284,19 @@ class Line extends Shape {
     draw = () => {
         switch(current_tool) {
             case 'rota':
+                // might use this later to rotate around center of line
+                // let midpoint_x = this.x_origin + Math.abs(this.width - this.x_origin) / 2;
+                // let midpoint_y = this.y_origin + Math.abs(this.height - this.y_origin) / 2;
+
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+                // rotate(length of line, length of line, rotation)
+                let rotate_around_origin = ShapeFunctions.rotate(this.width - this.x_origin, this.height - this.y_origin, rota);
+                let tran_back = ShapeFunctions.translate(rotate_around_origin[0][0], rotate_around_origin[1][0], this.x_origin, this.y_origin);
+
+                this.width = tran_back[0][0];
+                this.height = tran_back[1][0];
 
                 break;
             case 'scal':
@@ -329,6 +342,12 @@ class Rectangle extends Shape {
     constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
         this._shape_type = 'rect';
+        this._points = [
+            [this.x_origin, this.y_origin], // top left
+            [this.x_origin + this.width, this.y_origin], // top right
+            [this.x_origin + this.width, this.y_origin + this.height], // bottom right
+            [this.x_origin, this.y_origin + this.height], // bottom left
+        ];
     }
 
     checkCollision = (mouseX, mouseY) => {
@@ -338,12 +357,40 @@ class Rectangle extends Shape {
     draw = () => {
         switch(current_tool) {
             case 'rota':
+                // might use this later to rotate around center of line
+                // let midpoint_x = this.x_origin + Math.abs(this.width - this.x_origin) / 2;
+                // let midpoint_y = this.y_origin + Math.abs(this.height - this.y_origin) / 2;
+
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+                // top right
+                let rotate_top_right_around_origin = ShapeFunctions.rotate(this.width, 0, rota);
+                let tran_back_top_right = ShapeFunctions.translate(rotate_top_right_around_origin[0][0], rotate_top_right_around_origin[1][0], this.x_origin, this.y_origin);
+
+                this._points[1][0] = tran_back_top_right[0][0];
+                this._points[1][1] = tran_back_top_right[1][0];
+
+                // bottom right
+                let rotate_bottom_right_around_origin = ShapeFunctions.rotate(this.width, this.height, rota);
+                let tran_back_bottom_right = ShapeFunctions.translate(rotate_bottom_right_around_origin[0][0], rotate_bottom_right_around_origin[1][0], this.x_origin, this.y_origin);
+
+                this._points[2][0] = tran_back_bottom_right[0][0];
+                this._points[2][1] = tran_back_bottom_right[1][0];
+
+                // bottom left
+                let rotate_bottom_left_around_origin = ShapeFunctions.rotate(0, this.height, rota);
+                let tran_back_bottom_left = ShapeFunctions.translate(rotate_bottom_left_around_origin[0][0], rotate_bottom_left_around_origin[1][0], this.x_origin, this.y_origin);
+
+                this._points[3][0] = tran_back_bottom_left[0][0];
+                this._points[3][1] = tran_back_bottom_left[1][0];
 
                 break;
             case 'scal':
                 this.width = this.mouse_x - this.x_origin;
                 this.height = this.mouse_y - this.y_origin;
+
+                this.recalculatePoints();
                 
                 break;
             case 'sele':
@@ -356,19 +403,21 @@ class Rectangle extends Shape {
                 
                 this.x_origin = tran[0][0];
                 this.y_origin = tran[1][0];
+
+                this.recalculatePoints();
                 
                 break;
             default:
-                // hits this when drawing previously drawn shape
+                this.recalculatePoints();
                 break;
         }
 
         // draw rectangle
         context.beginPath();
-        context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
-        context.lineTo(this.x_origin, this.y_origin +this.height);
+        context.moveTo(this.x_origin, this.y_origin);              // top left
+        context.lineTo(this._points[1][0], this._points[1][1]);    // top right
+        context.lineTo(this._points[2][0], this._points[2][1]);    // bottom right
+        context.lineTo(this._points[3][0], this._points[3][1]);    // bottom left
         context.closePath();
     
         // change fill color
@@ -383,6 +432,15 @@ class Rectangle extends Shape {
             console.log("rect(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
+
+    recalculatePoints = () => {
+        this._points = [
+            [this.x_origin, this.y_origin], // top left
+            [this.x_origin + this.width, this.y_origin], // top right
+            [this.x_origin + this.width, this.y_origin + this.height], // bottom right
+            [this.x_origin, this.y_origin + this.height], // bottom left
+        ];
+    }
 }
 
 class Square extends Rectangle {
@@ -395,6 +453,7 @@ class Square extends Rectangle {
         switch(current_tool) {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 break;
             case 'scal':
@@ -461,6 +520,7 @@ class Triangle extends Shape {
         switch(current_tool) {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 break;
             case 'scal':
