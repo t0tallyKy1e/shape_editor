@@ -113,9 +113,42 @@ td {
     padding: 10px;
 }
 
-.blue {
+#blue-bar {
     color: #448AFF;
 }
+
+.button-group {
+    border: 1px solid #448AFF;
+    border-radius: 5px;
+    height: 20px;
+    padding: 3px 5px;
+    position: absolute;
+    right: 20px;
+    top: 4px;
+}
+
+.button-group > button {
+    background-color: inherit;
+    border: none;
+    color: #ffff44;
+    position: relative;
+    top: -4px;
+}
+
+.button-group > button:disabled {
+    color : "#636363";
+}
+
+.button-group > button:hover {
+    box-shadow: none;
+}
+
+.button-group-button {
+    background-color: inherit;
+}
+
+
+
 
 .rgb-range {
     text-align: right;
@@ -128,6 +161,11 @@ td {
     margin: 10px;
     padding: 20px;
     /*box-shadow: 5px 5px 5px 5px #212121;*/
+}
+
+#dark-mode-switch {
+    height: 25px;
+    width: 75px;
 }
 
 #debug {

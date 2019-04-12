@@ -24,8 +24,139 @@
             current_stroke = '#000000';
             current_tool = 'tran';
             select_mode = false;
+            dark_mode = true;
 
             temp_shape = []; // used for saving the currently drawn shape
+
+            darkMode = () => {
+                dark_mode = true;
+
+                // anchors
+                let anchor_elements = document.getElementsByTagName('a');
+                for(let i = 0; i < anchor_elements.length; ++i) {
+                    anchor_elements[i].style.color = "#448AFF";
+                }
+
+                // body
+                let body_element = document.getElementsByTagName('body');
+                body_element[0].style.backgroundColor = "#303030";
+                body_element[0].style.color = "#ffffff";
+
+                // buttons
+                let button_elements = document.getElementsByTagName('button');
+                for(let i = 0; i < button_elements.length; ++i) {
+                    if(button_elements[i].disabled) {
+                        button_elements[i].style.backgroundColor = "#a5a5a5";
+                        button_elements[i].style.borderColor = "#636363";
+                        button_elements[i].style.color = "#636363";
+                    } else {
+                        button_elements[i].style.backgroundColor = "#424242";
+                        button_elements[i].style.color = "#448AFF";
+                    }
+                }
+                
+                // section
+                let sections = document.getElementsByClassName('section');
+                for(let i = 0; i < sections.length; ++i) {
+                    if(sections[i].id != "debug") {
+                        sections[i].style.backgroundColor = "#424242";
+                        sections[i].style.color = "#ffffff";
+                    }
+                }
+
+                // blue bar
+                let bluebar = document.getElementById("blue-bar");
+                bluebar.style.color = "#448AFF";
+
+                // toolbar
+                let toolbar = document.getElementById("toolbar");
+                toolbar.style.backgroundColor = "#212121";
+                toolbar.style.color = "#448AFF";
+
+                // dark / light mode buttons
+                let darkModeButton = document.getElementById("dark-mode-button-dark");
+                let lightModeButton = document.getElementById("dark-mode-button-light");
+
+                darkModeButton.disabled = true;
+                lightModeButton.disabled = false;
+
+                // button group buttons
+                let button_group_button_elements = document.getElementsByClassName('button-group-button');
+                for(let i = 0; i < button_group_button_elements.length; ++i) {
+                    button_group_button_elements[i].style.backgroundColor = "inherit";
+
+                    if(button_group_button_elements[i].disabled) {
+                        button_group_button_elements[i].style.color = "#636363";
+                    } else {
+                        button_group_button_elements[i].style.color = "#448AFF";
+                    }
+                }
+            }
+
+            lightMode = () => {
+                dark_mode = false;
+
+                // anchors
+                let anchor_elements = document.getElementsByTagName('a');
+                for(let i = 0; i < anchor_elements.length; ++i) {
+                    anchor_elements[i].style.color = "#000000";
+                }
+
+                // body
+                let body_element = document.getElementsByTagName('body');
+                body_element[0].style.backgroundColor = "#dedede";
+                body_element[0].style.color = "#000000";
+
+                // buttons
+                let button_elements = document.getElementsByTagName('button');
+                for(let i = 0; i < button_elements.length; ++i) {
+                    if(button_elements[i].disabled) {
+                        button_elements[i].style.backgroundColor = "#448AFF";
+                        button_elements[i].style.borderColor = "#000000";
+                        button_elements[i].style.color = "#000000";
+                    } else {
+                        button_elements[i].style.backgroundColor = "#ffffff";
+                        button_elements[i].style.color = "#000000";
+                    }
+                }
+                
+                // section
+                let sections = document.getElementsByClassName('section');
+                for(let i = 0; i < sections.length; ++i) {
+                    if(sections[i].id != "debug") {
+                        sections[i].style.backgroundColor = "#ffffff";
+                        sections[i].style.color = "#000000";
+                    }
+                }
+
+                // blue bar
+                let bluebar = document.getElementById("blue-bar");
+                bluebar.style.color = "#000000";
+
+                // toolbar
+                let toolbar = document.getElementById("toolbar");
+                toolbar.style.backgroundColor = "#bdbdbd";
+                toolbar.style.color = "#000000";
+
+                // dark / light mode buttons
+                let darkModeButton = document.getElementById("dark-mode-button-dark");
+                let lightModeButton = document.getElementById("dark-mode-button-light");
+
+                darkModeButton.disabled = false;
+                lightModeButton.disabled = true;
+
+                // button group buttons
+                let button_group_button_elements = document.getElementsByClassName('button-group-button');
+                for(let i = 0; i < button_group_button_elements.length; ++i) {
+                    button_group_button_elements[i].style.backgroundColor = "inherit";
+
+                    if(button_group_button_elements[i].disabled) {
+                        button_group_button_elements[i].style.color = "#636363";
+                    } else {
+                        button_group_button_elements[i].style.color = "#448AFF";
+                    }
+                }
+            }
 
             // canvas functions
             draw = () => {
@@ -35,6 +166,8 @@
                 mouse_is_pressed = false;
                 set_current_shape(current_shape);
                 display_size();
+                disable_current_button();
+                darkMode();
             }
 
             clear_canvas = () => {
@@ -343,9 +476,13 @@
             <a onclick="save();">Save</a>
             <a onclick="load();" >Load</a>
             <a onclick="export_as_png();">Export as PNG</a>
-            <span class="blue">|</span>
+            <span id="blue-bar">|</span>
             <a onclick="undo();">Undo</a>
             <a onclick="redo();">Redo</a>
+            <span class="button-group">
+                <button class="button-group-button" id="dark-mode-button-dark" onclick="darkMode();">☽</a>
+                <button disabled class="button-group-button"id="dark-mode-button-light" onclick="lightMode();">☼</a>
+            </span>
         </div>
         <div id="left-side">
             <div id='canvas-wrapper'>
