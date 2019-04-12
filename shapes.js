@@ -160,6 +160,7 @@ class Ellipse extends Shape {
     constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
         this._shape_type = 'elli';
+        this._rotation = 0;
     }
 
     checkCollision = (mouseX, mouseY) => {
@@ -171,6 +172,8 @@ class Ellipse extends Shape {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+                this._rotation = rota;
 
                 break;
             case 'scal':
@@ -200,7 +203,7 @@ class Ellipse extends Shape {
 
         // draw ellipse
         context.beginPath();
-        context.ellipse(this.x_origin, this.y_origin, this.width, this.height, 0, 0, 2 * Math.PI);
+        context.ellipse(this.x_origin, this.y_origin, this.width, this.height, this._rotation, 0, 2 * Math.PI);
     
         // change fill color
         context.fillStyle = this.fill_color;
@@ -220,6 +223,7 @@ class Circle extends Ellipse {
     constructor(x_origin = 0, y_origin = 0, radius = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, radius, radius, mouse_x, mouse_y, stroke_color, fill_color);
         this._shape_type = 'circ';
+        this._rotation = 0;
     }
 
     draw = () => {
@@ -227,6 +231,8 @@ class Circle extends Ellipse {
             case 'rota':
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+                this._rotation = rota;
 
                 break;
             case 'scal':
@@ -255,7 +261,7 @@ class Circle extends Ellipse {
 
         // draw circle
         context.beginPath();
-        context.ellipse(this.x_origin, this.y_origin, this.width, this.height, 0, 0, 2 * Math.PI);
+        context.ellipse(this.x_origin, this.y_origin, this.width, this.height, this._rotation, 0, 2 * Math.PI);
     
         // change fill color
         context.fillStyle = this.fill_color;
@@ -273,8 +279,11 @@ class Circle extends Ellipse {
 
 class Line extends Shape {
     constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
+        // width and height are actually x_end / y_end in this case
         super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
         this._shape_type = 'line';
+        this._calculated_width = 0; // needed to keep original width and height in tact since re-drawing after the rotation was calculating based on the rotated width and height
+        this._calculated_height = 0;
     }
 
     checkCollision = (mouseX, mouseY) => {
@@ -295,13 +304,16 @@ class Line extends Shape {
                 let rotate_around_origin = ShapeFunctions.rotate(this.width - this.x_origin, this.height - this.y_origin, rota);
                 let tran_back = ShapeFunctions.translate(rotate_around_origin[0][0], rotate_around_origin[1][0], this.x_origin, this.y_origin);
 
-                this.width = tran_back[0][0];
-                this.height = tran_back[1][0];
+                this._calculated_width = tran_back[0][0];
+                this._calculated_height = tran_back[1][0];
 
                 break;
             case 'scal':
                 this.width = this.mouse_x;
                 this.height = this.mouse_y;
+
+                this._calculated_width = this.mouse_x;
+                this._calculated_height = this.mouse_y;
                 
                 break;
             case 'sele':
@@ -314,7 +326,7 @@ class Line extends Shape {
                 let tran_end = ShapeFunctions.translate(this.width, this.height, x_distance, y_distance);
                 
                 [this.x_origin, this.y_origin] = [tran_origin[0][0], tran_origin[1][0]];
-                [this.width, this.height] = [tran_end[0][0], tran_end[1][0]];
+                [this._calculated_width, this._calculated_height] = [tran_end[0][0], tran_end[1][0]];
                 
                 break;
             default:
@@ -325,7 +337,7 @@ class Line extends Shape {
         // draw line
         context.beginPath();
         context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.width, this.height);
+        context.lineTo(this._calculated_width, this._calculated_height);
         context.closePath();
     
         // change stroke color
@@ -333,11 +345,12 @@ class Line extends Shape {
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("line(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("line(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this._calculated_width + ", height = " + this._calculated_height + ")");
         }
     }
 }
 
+// i want to rewrite the below as n-gons where the number of sides is a new parameter... this will make polygons easier to work with
 class Rectangle extends Shape {
     constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
@@ -448,64 +461,9 @@ class Square extends Rectangle {
         super(x_origin, y_origin, size, size, mouse_x, mouse_y, stroke_color, fill_color);
         this._shape_type = 'squa';
     }
-
-    draw = () => {
-        switch(current_tool) {
-            case 'rota':
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
-
-                break;
-            case 'scal':
-                this.width = this.mouse_x - this.x_origin > this.mouse_y - this.y_origin ? this.mouse_x - this.x_origin : this.mouse_y - this.y_origin;
-                this.height = this.width;
-
-                if(this.mouse_x > this.x_origin && this.mouse_y < this.y_origin) {
-                    this.height *= -1;
-                } else if(this.mouse_x < this.x_origin && this.mouse_y > this.y_origin) {
-                    this.width *= -1;
-                }
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
-
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
-                
-                this.x_origin = tran[0][0];
-                this.y_origin = tran[1][0];
-                
-                break;
-            default:
-                // hits this when drawing previously drawn shape
-                break;
-        }
-
-        // draw square
-        context.beginPath();
-        context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
-        context.lineTo(this.x_origin, this.y_origin + this.height);
-        context.closePath();
-    
-        // change fill color
-        context.fillStyle = this.fill_color;
-        context.fill();
-    
-        // change stroke color
-        context.strokeStyle = this.stroke_color;
-        context.stroke();
-    
-        if(DEBUG == true) {
-            console.log("square(x = " + this.x_origin + ", y = " + this.y_origin + ", size = " + this.width + ")");
-        }
-    }
 }
 
+// redraw on rotate not working for triangles!!! i think it's something in rotate that's messing with it
 class Triangle extends Shape {
     constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
@@ -522,10 +480,28 @@ class Triangle extends Shape {
                 let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
+                this.calculatePoints();
+
+                // bottom right
+                let rotate_bottom_right_around_origin = ShapeFunctions.rotate(this.width, this.height, rota);
+                let tran_back_bottom_right = ShapeFunctions.translate(rotate_bottom_right_around_origin[0][0], rotate_bottom_right_around_origin[1][0], this.x_origin, this.y_origin);
+
+                this._points[1][0] = tran_back_bottom_right[0][0];
+                this._points[1][1] = tran_back_bottom_right[1][0];
+
+                // bottom left
+                let rotate_bottom_left_around_origin = ShapeFunctions.rotate(0, this.height, rota);
+                let tran_back_bottom_left = ShapeFunctions.translate(rotate_bottom_left_around_origin[0][0], rotate_bottom_left_around_origin[1][0], this.x_origin, this.y_origin);
+
+                this._points[2][0] = tran_back_bottom_left[0][0];
+                this._points[2][1] = tran_back_bottom_left[1][0];
+
                 break;
             case 'scal':
                 this.width = this.mouse_x - this.x_origin;
                 this.height = this.mouse_y - this.y_origin;
+
+                this.calculatePoints();
                 
                 break;
             case 'sele':
@@ -538,6 +514,8 @@ class Triangle extends Shape {
                 
                 this.x_origin = tran[0][0];
                 this.y_origin = tran[1][0];
+
+                this.calculatePoints();
                 
                 break;
             default:
@@ -547,10 +525,11 @@ class Triangle extends Shape {
 
         // draw triangle
         context.beginPath();
-        context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
-        context.lineTo(this.x_origin, this.y_origin + this.height);
-        context.lineTo(this.x_origin, this.y_origin);
+
+        context.moveTo(this._points[0][0], this._points[0][1]);
+        context.lineTo(this._points[1][0], this._points[1][1]);
+        context.lineTo(this._points[2][0], this._points[2][1]);
+        context.lineTo(this._points[0][0], this._points[0][1]);
         context.closePath();
     
         // change fill color
@@ -564,5 +543,13 @@ class Triangle extends Shape {
         if(DEBUG == true) {
             console.log("triangle(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
         }
+    }
+
+    calculatePoints = () => {
+        this._points = [
+            [this.x_origin, this.y_origin], // top left
+            [this.x_origin + this.width, this.y_origin + this.height], // bottom right
+            [this.x_origin, this.y_origin + this.height], // bottom left
+        ];
     }
 }

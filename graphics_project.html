@@ -19,7 +19,7 @@
             const z_key = 90;
 
             current_fill = '#000000';
-            current_shape = 'line';
+            current_shape = 'tria';
             current_size = 0;
             current_stroke = '#000000';
             current_tool = 'rota';
@@ -122,7 +122,7 @@
 
                 mouse_is_pressed = false;
                 
-                temp_shape.save(); // test of save 
+                temp_shape.save();
                 
                 document.getElementById('mouse_released_x').innerHTML = x_released;
                 document.getElementById('mouse_released_y').innerHTML = y_released;
@@ -153,10 +153,22 @@
             // button functions
             set_current_shape = (shape) => {
                 current_shape = shape;
+
+                if(dark_mode)  {
+                    darkMode();
+                } else {
+                    lightMode();
+                }
             }
 
             set_current_tool = (tool) => {
                 current_tool = tool;
+
+                if(dark_mode)  {
+                    darkMode();
+                } else {
+                    lightMode();
+                }
             }
 
             set_current_fill = () => {
@@ -207,21 +219,11 @@
                 }
             }
 
-
-
-            // error in draw_previous() when circle isn't the first shape drawn
-
-
-
-
             // saving / printing previous shapes
             print_all_drawn_shapes = () => {
                 console.log(drawn_shapes);
             }
 
-            save_shape = () => {
-                drawn_shapes.push(temp_shape);
-            }
 
             draw_previous = () => {
                 temp_tool = current_tool;
@@ -319,6 +321,7 @@
                         button_elements[i].style.color = "#636363";
                     } else {
                         button_elements[i].style.backgroundColor = "#424242";
+                        button_elements[i].style.borderColor = "#448AFF";
                         button_elements[i].style.color = "#448AFF";
                     }
                 }
@@ -412,6 +415,7 @@
                         button_elements[i].style.color = "#000000";
                     } else {
                         button_elements[i].style.backgroundColor = "#ffffff";
+                        button_elements[i].style.borderColor = "#448AFF";
                         button_elements[i].style.color = "#000000";
                     }
                 }
