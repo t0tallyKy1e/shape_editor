@@ -463,7 +463,6 @@ class Square extends Rectangle {
     }
 }
 
-// redraw on rotate not working for triangles!!! i think it's something in rotate that's messing with it
 class Triangle extends Shape {
     constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
         super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
