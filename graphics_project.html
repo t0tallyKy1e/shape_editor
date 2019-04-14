@@ -117,10 +117,8 @@
                 exportAsPNG : () => {
                     let canvasData = canvas.toDataURL();
                     let link = document.createElement("a");
-                    let file = new Blob([canvasData], {type : 'image/png'});
                     link.href = canvasData;
-                    let fileName = prompt('Please enter a file name: ', '');
-                    link.download = fileName;
+                    link.download = 'shapes_image';
                     link.click();
                 },
 
@@ -133,8 +131,7 @@
                     let link = document.createElement("a");
                     let file = new Blob([jsonShapeData], {type : 'application/json'});
                     link.href = URL.createObjectURL(file);
-                    let fileName = prompt('Please enter a file name: ', '');
-                    link.download = fileName;
+                    link.download = 'shapes';
                     link.click();
                 }
             }
