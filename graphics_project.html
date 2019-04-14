@@ -8,170 +8,464 @@
         <script type="text/javascript">
             DEBUG = false;
 
-            mouse_over_canvas = true;
-            drawn_shapes = new Array();
-            page_margin_x = 40;
-            page_margin_y = 65;
-            canvas_size = 600;
+            pageMarginX = 40;
+            pageMarginY = 65;
             
-            keys_pressed = new Array();
-            const ctrl_key = 17;
-            const z_key = 90;
+            keysPressed = new Array();
 
-            current_fill = '#000000';
-            current_shape = 'tria';
-            current_size = 0;
-            current_stroke = '#000000';
-            current_tool = 'rota';
-            select_mode = false;
-            dark_mode = true;
+            currentFill = '#000000';
+            currentShape = 'tria';
+            currentSize = 0;
+            currentStroke = '#000000';
+            currentTool = 'rota';
 
-            temp_shape = []; // used for saving the currently drawn shape
+            selectMode = false;
 
-            // canvas functions
-            draw = () => {
-                canvas = document.getElementById('canvas');
-                context = canvas.getContext('2d');
+            tempShape = []; // used for saving the currently drawn shape
 
-                mouse_is_pressed = false;
-                set_current_shape(current_shape);
-                display_size();
-                disable_current_button();
-                darkMode();
-                set_current_fill();
-                set_current_stroke();
-            }
+            var Canvas = {
+                drawnShapes : new Array(),
+                size : 600,
 
-            clear_canvas = () => {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-            }
+                clear : () => {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                },
 
+                draw : () => {
+                    canvas = document.getElementById('canvas');
+                    context = canvas.getContext('2d');
 
+                    Mouse.isPressed = false;
+                    setCurrentShape(currentShape);
+                    setCurrentSize();
+                    UI.disableCurrentButton();
+                    UI.switchDisplayMode();
+                    setCurrentFill();
+                    setCurrentStroke();
+                },
 
+                drawPrevious : () => {
+                    tempTool = currentTool;
+                    tempFill = currentFill;
+                    tempStroke = currentStroke;
 
-            // mouse functions
-            mouse_pressed = (event) => {
-                mouse_over_canvas = event.pageX - page_margin_x >= 0 && event.pageX - page_margin_x <= canvas_size && event.pageY - page_margin_y >= 0 && event.pageY - page_margin_y <= canvas_size;
+                    Canvas.drawnShapes.forEach((shape) => {
+                        currentTool = shape[1];
 
-                if(mouse_over_canvas) {
-                    x_pressed = event.pageX - page_margin_x;
-                    y_pressed = event.pageY - page_margin_y;
+                        switch(shape[0]) {
+                            case "circ":
+                                let tempCirc = new Circle();
+                                tempCirc.load(shape[2]);
+                                tempCirc.draw();
+                                break;
+                            case "curv":
+                                break;
+                            case "elli":
+                                let tempElli = new Ellipse();
+                                tempElli.load(shape[2]);
+                                tempElli.draw();
+                                break;
+                            case "line":
+                                let tempLine = new Line();
+                                tempLine.load(shape[2]);
+                                tempLine.draw();
+                                break;
+                            case "pgon":
+                                break;
+                            case "plin":
+                                break;
+                            case "rect":
+                                let tempRect = new Rectangle();
+                                tempRect.load(shape[2]);
+                                tempRect.draw();
+                                break;
+                            case "squa":
+                                let tempSquare = new Square();
+                                tempSquare.load(shape[2]);
+                                tempSquare.draw();
+                                break;
+                            case "tria":
+                                let tempTriangle = new Triangle();
+                                tempTriangle.load(shape[2]);
+                                tempTriangle.draw();
+                                break;
+                            default:
+                                console.log("Error -> Canvas.drawPrevious(): no shape definition for " + shape[0] + ".");
+                                break;
+                        }
+                    });
 
-                    mouse_is_pressed = true;
-                    // select();
+                    currentTool = tempTool;
+                    currentStroke = tempStroke;
+                    currentFill = tempFill;
+                },
 
-                    document.getElementById('mouse_pressed_x').innerHTML = x_pressed;
-                    document.getElementById('mouse_pressed_y').innerHTML = y_pressed;
-                    document.getElementById('status').innerHTML = mouse_is_pressed;
-                }
-            }
-
-            mouse_move = (event) => {
-                x_move = event.pageX - page_margin_x;
-                y_move = event.pageY - page_margin_y;
-
-                if(mouse_is_pressed && !select_mode) {
-                    clear_canvas();
-                    draw_previous();
-
-                    switch(current_shape) {
-                        case "circ":
-                            temp_shape = new Circle(x_pressed, y_pressed, current_size / 2, x_move, y_move, current_stroke, current_fill);
-                            temp_shape.draw();
-                            break;
-                        case "curv":
-                            break;
-                        case "elli":
-                            temp_shape = new Ellipse(x_pressed, y_pressed, current_size / 2, current_size / 2, x_move, y_move, current_stroke);
-                            temp_shape.draw();
-                            break;
-                        case "line":
-                            temp_shape = new Line(x_pressed, y_pressed, x_pressed + current_size, y_pressed + current_size, x_move, y_move, current_stroke);
-                            temp_shape.draw();
-                            break;
-                        case "pgon":
-                            break;
-                        case "plin":
-                            break;
-                        case "rect":
-                            temp_shape = new Rectangle(x_pressed, y_pressed, current_size, current_size, x_move, y_move, current_stroke, current_fill);
-                            temp_shape.draw();
-                            break;
-                        case "squa":
-                            temp_shape = new Square(x_pressed, y_pressed, current_size, x_move, y_move, current_stroke, current_fill);
-                            temp_shape.draw();
-                            break;
-                        case "tria":
-                            temp_shape = new Triangle(x_pressed, y_pressed, current_size, current_size, x_move, y_move, current_stroke, current_fill);
-                            temp_shape.draw();
-                            break;
-                        default:
-                            console.log("Error: no shape selected.");
-                            break;
+                undo : () => {
+                    if (keysPressed[Key.ctrl] && keysPressed[Key.z]) {
+                        Canvas.drawnShapes.pop();
+                        Canvas.clear();
+                        Canvas.drawPrevious();
                     }
                 }
-
-                document.getElementById('mouse_move_x').innerHTML = x_move;
-                document.getElementById('mouse_move_y').innerHTML = y_move;
-                document.getElementById('status').innerHTML = mouse_is_pressed;
             }
 
-            mouse_released = (event) => {
-                x_released = event.pageX - page_margin_x;
-                y_released = event.pageY - page_margin_y;
+            var File = {
+                exportAsPNG : () => {
+                    window.open(canvas.toDataURL()); // if drawings are all black, nothing shows
+                    console.log(canvas.toDataURL());
+                },
 
-                mouse_is_pressed = false;
-                
-                temp_shape.save();
-                
-                document.getElementById('mouse_released_x').innerHTML = x_released;
-                document.getElementById('mouse_released_y').innerHTML = y_released;
-                document.getElementById('status').innerHTML = mouse_is_pressed;
-            }
+                load : () => {
 
+                },
 
+                save : () => {
 
-
-            // key functions
-            // -- I got the algorithm for this solution from https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript#answer-12444641
-            check_multiple_key_presses = (event) => {
-                keys_pressed[event.keyCode] = event.type == 'keydown';
-            }
-
-            //-- currently erases text inputs
-            undo = () => {
-                if (keys_pressed[ctrl_key] && keys_pressed[z_key]) {
-                    drawn_shapes.pop();
-                    clear_canvas();
-                    draw_previous();
                 }
             }
 
+            var Key = {
+                ctrl : 17,
+                z : 90,
 
+                // -- I got the algorithm for this solution from https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript#answer-12444641
+                checkMultipleKeyPresses : (event) => {
+                    keysPressed[event.keyCode] = event.type == 'keydown';
+                }
+            }
 
+            var Matrix = {
+                multiply : (a, b) => {
+                    let aNumRows = a.length;
+                    let aNumCols = a[0].length;
+                    let bNumCols = b[0].length;
+                    let m = new Array(aNumRows);
 
-            // button functions
-            set_current_shape = (shape) => {
-                current_shape = shape;
+                    for (let r = 0; r < aNumRows; ++r) {
+                        m[r] = new Array(bNumCols);
+                        for (let c = 0; c < bNumCols; ++c) {
+                            m[r][c] = 0;
 
-                if(dark_mode)  {
-                    darkMode();
+                            for (let i = 0; i < aNumCols; ++i) {
+                                m[r][c] += a[r][i] * b[i][c];
+                            }
+                        }
+                    }
+                    return m;
+                },
+
+                print : (matrix) => {
+                    for(let i = 0; i < matrix.length; i++) {
+                        for(let j = 0; j < matrix[0].length; j++) {
+                            console.log(matrix[i][j] + " ");
+                        }
+                        console.log("new row");
+                    }
+                },
+            }
+
+            var Mouse = {
+                isPressed : false,
+                moveX : 0,
+                moveY : 0,
+                overCanvas : false,
+                pressedX : 0,
+                pressedY : 0,
+                releasedX : 0,
+                releasedY : 0,
+
+                pressed : (event) => {
+                    Mouse.overCanvas = event.pageX - pageMarginX >= 0 && event.pageX - pageMarginX <= Canvas.size && event.pageY - pageMarginY >= 0 && event.pageY - pageMarginY <= Canvas.size;
+
+                    if(Mouse.overCanvas) {
+                        Mouse.pressedX = event.pageX - pageMarginX;
+                        Mouse.pressedY = event.pageY - pageMarginY;
+
+                        Mouse.isPressed = true;
+                        // select();
+
+                        document.getElementById('mouse_pressed_x').innerHTML = Mouse.pressedX;
+                        document.getElementById('mouse_pressed_y').innerHTML = Mouse.pressedY;
+                        document.getElementById('status').innerHTML = Mouse.isPressed;
+                    }
+                },
+
+                move : (event) => {
+                    Mouse.moveX = event.pageX - pageMarginX;
+                    Mouse.moveY = event.pageY - pageMarginY;
+
+                    if(Mouse.isPressed && !selectMode) {
+                        Canvas.clear();
+                        Canvas.drawPrevious();
+
+                        switch(currentShape) {
+                            case "circ":
+                                tempShape = new Circle(Mouse.pressedX, Mouse.pressedY, currentSize / 2, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
+                                break;
+                            case "curv":
+                                break;
+                            case "elli":
+                                tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentSize / 2, currentSize / 2, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape.draw();
+                                break;
+                            case "line":
+                                tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentSize, Mouse.pressedY + currentSize, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape.draw();
+                                break;
+                            case "pgon":
+                                break;
+                            case "plin":
+                                break;
+                            case "rect":
+                                tempShape = new Rectangle(Mouse.pressedX, Mouse.pressedY, currentSize, currentSize, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
+                                break;
+                            case "squa":
+                                tempShape = new Square(Mouse.pressedX, Mouse.pressedY, currentSize, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
+                                break;
+                            case "tria":
+                                tempShape = new Triangle(Mouse.pressedX, Mouse.pressedY, currentSize, currentSize, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
+                                break;
+                            default:
+                                console.log("Error: no shape selected.");
+                                break;
+                        }
+                    }
+
+                    document.getElementById('mouse_move_x').innerHTML = Mouse.moveX;
+                    document.getElementById('mouse_move_y').innerHTML = Mouse.moveY;
+                    document.getElementById('status').innerHTML = Mouse.isPressed;
+                },
+
+                released : (event) => {
+                    Mouse.releasedX = event.pageX - pageMarginX;
+                    Mouse.releasedY = event.pageY - pageMarginY;
+
+                    Mouse.isPressed = false;
+                    
+                    tempShape.save();
+                    
+                    document.getElementById('mouse_released_x').innerHTML = Mouse.releasedX;
+                    document.getElementById('mouse_released_y').innerHTML = Mouse.releasedY;
+                    document.getElementById('status').innerHTML = Mouse.isPressed;
+                }
+            };
+
+            var Trig = {
+                calculateRotation : (x0, y0, x1, y1) => {
+                    // -- found this at: https://stackoverflow.com/questions/21483999/using-atan2-to-find-angle-between-two-vectors#answer-21484228
+                    return Math.atan2(y1 - y0, x1 - x0);
+                },
+
+                degreesToRadians : (degrees) => {
+                    return degrees * Math.PI / 180;
+                },
+
+                radiansToDegrees : (radians) => {
+                    return radians * 180 / Math.PI;
+                }
+            }
+
+            var UI = {
+                darkMode : true,
+
+                disableCurrentButton : () => {
+                    let buttons = document.getElementsByTagName("button");
+                    
+                    for (let i = 0; i < buttons.length; ++i) {
+                        if(buttons[i].value == currentShape || buttons[i].value == currentTool) {
+                            buttons[i].disabled = true;
+                        } else {
+                            buttons[i].disabled = false;
+                        }
+                    }
+
+                    if(UI.darkMode) {
+                        UI.switchDisplayMode();
+                    } else {
+                        UI.lightMode();
+                    }
+                },
+
+                lightMode : () => {
+                    UI.darkMode = false;
+
+                    // anchors
+                    let anchorElements = document.getElementsByTagName('a');
+                    for(let i = 0; i < anchorElements.length; ++i) {
+                        anchorElements[i].style.color = "#000000";
+                    }
+
+                    // body
+                    let bodyElement = document.getElementsByTagName('body');
+                    bodyElement[0].style.backgroundColor = "#dedede";
+                    bodyElement[0].style.color = "#000000";
+
+                    // buttons
+                    let buttonElements = document.getElementsByTagName('button');
+                    for(let i = 0; i < buttonElements.length; ++i) {
+                        if(buttonElements[i].disabled) {
+                            buttonElements[i].style.backgroundColor = "#448AFF";
+                            buttonElements[i].style.borderColor = "#000000";
+                            buttonElements[i].style.color = "#000000";
+                        } else {
+                            buttonElements[i].style.backgroundColor = "#ffffff";
+                            buttonElements[i].style.borderColor = "#448AFF";
+                            buttonElements[i].style.color = "#000000";
+                        }
+                    }
+
+                    // shape size input
+                    let shapeSizeInput = document.getElementById('shape-width-text');
+                    shapeSizeInput.style.borderWidth = "1px";
+                    shapeSizeInput.style.borderColor = "#448AFF";
+                    shapeSizeInput.style.borderStyle = "solid";
+                    
+                    // section
+                    let sections = document.getElementsByClassName('section');
+                    for(let i = 0; i < sections.length; ++i) {
+                        if(sections[i].id != "debug") {
+                            sections[i].style.backgroundColor = "#ffffff";
+                            sections[i].style.color = "#000000";
+                        }
+                    }
+
+                    // blue bar
+                    let bluebar = document.getElementById("blue-bar");
+                    bluebar.style.color = "#000000";
+
+                    // toolbar
+                    let toolbar = document.getElementById("toolbar");
+                    toolbar.style.backgroundColor = "#bdbdbd";
+                    toolbar.style.color = "#000000";
+
+                    // dark / light mode buttons
+                    let darkModeButton = document.getElementById("dark-mode-button-dark");
+                    let lightModeButton = document.getElementById("dark-mode-button-light");
+
+                    darkModeButton.disabled = false;
+                    lightModeButton.disabled = true;
+
+                    // button group buttons
+                    let buttonGroupButtonElements = document.getElementsByClassName('button-group-button');
+                    for(let i = 0; i < buttonGroupButtonElements.length; ++i) {
+                        buttonGroupButtonElements[i].style.backgroundColor = "inherit";
+
+                        if(buttonGroupButtonElements[i].disabled) {
+                            buttonGroupButtonElements[i].style.color = "#636363";
+                        } else {
+                            buttonGroupButtonElements[i].style.color = "#000000";
+                        }
+                    }
+
+                    // button group
+                    let buttonGroup = document.getElementsByClassName('button-group');
+                    for(let i = 0; i < buttonGroup.length; ++i) {
+                        buttonGroup[i].style.borderColor = "#000000";
+                    }
+                },
+
+                switchDisplayMode : () => {
+                    UI.darkMode = true;
+
+                    // anchors
+                    let anchorElements = document.getElementsByTagName('a');
+                    for(let i = 0; i < anchorElements.length; ++i) {
+                        anchorElements[i].style.color = "#448AFF";
+                    }
+
+                    // body
+                    let bodyElement = document.getElementsByTagName('body');
+                    bodyElement[0].style.backgroundColor = "#303030";
+                    bodyElement[0].style.color = "#ffffff";
+
+                    // buttons
+                    let buttonElements = document.getElementsByTagName('button');
+                    for(let i = 0; i < buttonElements.length; ++i) {
+                        if(buttonElements[i].disabled) {
+                            buttonElements[i].style.backgroundColor = "#a5a5a5";
+                            buttonElements[i].style.borderColor = "#636363";
+                            buttonElements[i].style.color = "#636363";
+                        } else {
+                            buttonElements[i].style.backgroundColor = "#424242";
+                            buttonElements[i].style.borderColor = "#448AFF";
+                            buttonElements[i].style.color = "#448AFF";
+                        }
+                    }
+                    
+                    // section
+                    let sections = document.getElementsByClassName('section');
+                    for(let i = 0; i < sections.length; ++i) {
+                        if(sections[i].id != "debug") {
+                            sections[i].style.backgroundColor = "#424242";
+                            sections[i].style.color = "#ffffff";
+                        }
+                    }
+
+                    // blue bar
+                    let bluebar = document.getElementById("blue-bar");
+                    bluebar.style.color = "#448AFF";
+
+                    // shape size input
+                    let shapeSizeInput = document.getElementById('shape-width-text');
+                    shapeSizeInput.style.border = "none";
+
+                    // toolbar
+                    let toolbar = document.getElementById("toolbar");
+                    toolbar.style.backgroundColor = "#212121";
+                    toolbar.style.color = "#448AFF";
+
+                    // dark / light mode buttons
+                    let darkModeButton = document.getElementById("dark-mode-button-dark");
+                    let lightModeButton = document.getElementById("dark-mode-button-light");
+
+                    darkModeButton.disabled = true;
+                    lightModeButton.disabled = false;
+
+                    // button group buttons
+                    let buttonGroupButtonElements = document.getElementsByClassName('button-group-button');
+                    for(let i = 0; i < buttonGroupButtonElements.length; ++i) {
+                        buttonGroupButtonElements[i].style.backgroundColor = "inherit";
+
+                        if(buttonGroupButtonElements[i].disabled) {
+                            buttonGroupButtonElements[i].style.color = "#636363";
+                        } else {
+                            buttonGroupButtonElements[i].style.color = "#448AFF";
+                        }
+                    }
+
+                    // button group
+                    let buttonGroup = document.getElementsByClassName('button-group');
+                    for(let i = 0; i < buttonGroup.length; ++i) {
+                        buttonGroup[i].style.borderColor = "#448AFF";
+                    }
+                },
+            }
+
+            setCurrentShape = (shape) => {
+                currentShape = shape;
+
+                if(UI.darkMode)  {
+                    UI.switchDisplayMode();
                 } else {
-                    lightMode();
+                    UI.lightMode();
                 }
             }
 
-            set_current_tool = (tool) => {
-                current_tool = tool;
+            setCurrentTool = (tool) => {
+                currentTool = tool;
 
-                if(dark_mode)  {
-                    darkMode();
+                if(UI.darkMode)  {
+                    UI.switchDisplayMode();
                 } else {
-                    lightMode();
+                    UI.lightMode();
                 }
             }
 
-            set_current_fill = () => {
+            setCurrentFill = () => {
                 red = parseInt(document.getElementById('shape-fill-color-range-r').value).toString(16);
                 red = red.length == 1 ? "0" + red : red;
 
@@ -181,12 +475,22 @@
                 blue = parseInt(document.getElementById('shape-fill-color-range-b').value).toString(16);
                 blue = blue.length == 1 ? "0" + blue : blue;
 
-                current_fill = "#" + red + green +  blue;
-                document.getElementById('shape-fill-color-text').value = current_fill;
-                document.getElementById('shape-fill-color-text').style.backgroundColor = current_fill;
+                currentFill = "#" + red + green +  blue;
+                document.getElementById('shape-fill-color-text').value = currentFill;
+                document.getElementById('shape-fill-color-text').style.backgroundColor = currentFill;
             }
 
-            set_current_stroke = () => {
+            setCurrentSize = (type, size) => {
+                if(type == 'text') {
+                    document.getElementById('shape-width-range').value = document.getElementById('shape-width-text').value;
+                } else if (type == 'range') {
+                    document.getElementById('shape-width-text').value = document.getElementById('shape-width-range').value;
+                }
+
+                currentSize = parseInt(document.getElementById('shape-width-text').value);
+            }
+
+            setCurrentStroke = () => {
                 red = parseInt(document.getElementById('shape-stroke-color-range-r').value).toString(16);
                 red = red.length == 1 ? "0" + red : red;
 
@@ -196,324 +500,23 @@
                 blue = parseInt(document.getElementById('shape-stroke-color-range-b').value).toString(16);
                 blue = blue.length == 1 ? "0" + blue : blue;
 
-                current_stroke = "#" + red + green +  blue;
-                document.getElementById('shape-stroke-color-text').value = current_stroke;
-                document.getElementById('shape-stroke-color-text').style.backgroundColor = current_stroke;
-            }
-
-            disable_current_button = () => {
-                let buttons = document.getElementsByTagName("button");
-                
-                for (let i = 0; i < buttons.length; ++i) {
-                    if(buttons[i].value == current_shape || buttons[i].value == current_tool) {
-                        buttons[i].disabled = true;
-                    } else {
-                        buttons[i].disabled = false;
-                    }
-                }
-
-                if(dark_mode) {
-                    darkMode();
-                } else {
-                    lightMode();
-                }
-            }
-
-            // saving / printing previous shapes
-            print_all_drawn_shapes = () => {
-                console.log(drawn_shapes);
-            }
-
-
-            draw_previous = () => {
-                temp_tool = current_tool;
-                temp_fill = current_fill;
-                temp_stroke = current_stroke;
-
-                drawn_shapes.forEach((shape) => {
-                    current_tool = shape[1];
-
-                    switch(shape[0]) {
-                        case "circ":
-                            let temp_circ = new Circle();
-                            temp_circ.load(shape[2]);
-                            temp_circ.draw();
-                            break;
-                        case "curv":
-                            break;
-                        case "elli":
-                            let temp_elli = new Ellipse();
-                            temp_elli.load(shape[2]);
-                            temp_elli.draw();
-                            break;
-                        case "line":
-                            let temp_line = new Line();
-                            temp_line.load(shape[2]);
-                            temp_line.draw();
-                            break;
-                        case "pgon":
-                            break;
-                        case "plin":
-                            break;
-                        case "rect":
-                            let temp_rect = new Rectangle();
-                            temp_rect.load(shape[2]);
-                            temp_rect.draw();
-                            break;
-                        case "squa":
-                            let temp_square = new Square();
-                            temp_square.load(shape[2]);
-                            temp_square.draw();
-                            break;
-                        case "tria":
-                            let temp_triangle = new Triangle();
-                            temp_triangle.load(shape[2]);
-                            temp_triangle.draw();
-                            break;
-                        default:
-                            console.log("Error -> draw_previous(): no shape definition for " + shape[0] + ".");
-                            break;
-                    }
-                });
-
-                current_tool = temp_tool;
-                current_stroke = temp_stroke;
-                current_fill = temp_fill;
-            }
-
-
-
-
-
-            // file functions
-            export_as_png = () => {
-                window.open(canvas.toDataURL()); // if drawings are all black, nothing shows
-                console.log(canvas.toDataURL());
-            }
-
-
-            // extras
-            // -- found this at: https://stackoverflow.com/questions/21483999/using-atan2-to-find-angle-between-two-vectors#answer-21484228
-            calculate_rotation = (x0, y0, x1, y1) => {
-                return Math.atan2(y1 - y0, x1 - x0);
-            }
-            
-            darkMode = () => {
-                dark_mode = true;
-
-                // anchors
-                let anchor_elements = document.getElementsByTagName('a');
-                for(let i = 0; i < anchor_elements.length; ++i) {
-                    anchor_elements[i].style.color = "#448AFF";
-                }
-
-                // body
-                let body_element = document.getElementsByTagName('body');
-                body_element[0].style.backgroundColor = "#303030";
-                body_element[0].style.color = "#ffffff";
-
-                // buttons
-                let button_elements = document.getElementsByTagName('button');
-                for(let i = 0; i < button_elements.length; ++i) {
-                    if(button_elements[i].disabled) {
-                        button_elements[i].style.backgroundColor = "#a5a5a5";
-                        button_elements[i].style.borderColor = "#636363";
-                        button_elements[i].style.color = "#636363";
-                    } else {
-                        button_elements[i].style.backgroundColor = "#424242";
-                        button_elements[i].style.borderColor = "#448AFF";
-                        button_elements[i].style.color = "#448AFF";
-                    }
-                }
-                
-                // section
-                let sections = document.getElementsByClassName('section');
-                for(let i = 0; i < sections.length; ++i) {
-                    if(sections[i].id != "debug") {
-                        sections[i].style.backgroundColor = "#424242";
-                        sections[i].style.color = "#ffffff";
-                    }
-                }
-
-                // blue bar
-                let bluebar = document.getElementById("blue-bar");
-                bluebar.style.color = "#448AFF";
-
-                // shape size input
-                let shape_size_input = document.getElementById('shape-size-text');
-                shape_size_input.style.border = "none";
-
-                // toolbar
-                let toolbar = document.getElementById("toolbar");
-                toolbar.style.backgroundColor = "#212121";
-                toolbar.style.color = "#448AFF";
-
-                // dark / light mode buttons
-                let darkModeButton = document.getElementById("dark-mode-button-dark");
-                let lightModeButton = document.getElementById("dark-mode-button-light");
-
-                darkModeButton.disabled = true;
-                lightModeButton.disabled = false;
-
-                // button group buttons
-                let button_group_button_elements = document.getElementsByClassName('button-group-button');
-                for(let i = 0; i < button_group_button_elements.length; ++i) {
-                    button_group_button_elements[i].style.backgroundColor = "inherit";
-
-                    if(button_group_button_elements[i].disabled) {
-                        button_group_button_elements[i].style.color = "#636363";
-                    } else {
-                        button_group_button_elements[i].style.color = "#448AFF";
-                    }
-                }
-
-                // button group
-                let button_group = document.getElementsByClassName('button-group');
-                for(let i = 0; i < button_group.length; ++i) {
-                    button_group[i].style.borderColor = "#448AFF";
-                }
-            }
-
-            degrees_to_radians = (degrees) => {
-                return degrees * Math.PI / 180;
-            }
-
-            display_size = (type, size) => {
-                if(type == 'text') {
-                    document.getElementById('shape-size-range').value = document.getElementById('shape-size-text').value;
-                } else if (type == 'range') {
-                    document.getElementById('shape-size-text').value = document.getElementById('shape-size-range').value;
-                }
-
-                current_size = parseInt(document.getElementById('shape-size-text').value);
-            }
-
-            draw_pixel = (x, y) => {
-                context.strokeRect(x, y, 1, 1);
-            }
-            
-            lightMode = () => {
-                dark_mode = false;
-
-                // anchors
-                let anchor_elements = document.getElementsByTagName('a');
-                for(let i = 0; i < anchor_elements.length; ++i) {
-                    anchor_elements[i].style.color = "#000000";
-                }
-
-                // body
-                let body_element = document.getElementsByTagName('body');
-                body_element[0].style.backgroundColor = "#dedede";
-                body_element[0].style.color = "#000000";
-
-                // buttons
-                let button_elements = document.getElementsByTagName('button');
-                for(let i = 0; i < button_elements.length; ++i) {
-                    if(button_elements[i].disabled) {
-                        button_elements[i].style.backgroundColor = "#448AFF";
-                        button_elements[i].style.borderColor = "#000000";
-                        button_elements[i].style.color = "#000000";
-                    } else {
-                        button_elements[i].style.backgroundColor = "#ffffff";
-                        button_elements[i].style.borderColor = "#448AFF";
-                        button_elements[i].style.color = "#000000";
-                    }
-                }
-
-                // shape size input
-                let shape_size_input = document.getElementById('shape-size-text');
-                shape_size_input.style.borderWidth = "1px";
-                shape_size_input.style.borderColor = "#448AFF";
-                shape_size_input.style.borderStyle = "solid";
-                
-                // section
-                let sections = document.getElementsByClassName('section');
-                for(let i = 0; i < sections.length; ++i) {
-                    if(sections[i].id != "debug") {
-                        sections[i].style.backgroundColor = "#ffffff";
-                        sections[i].style.color = "#000000";
-                    }
-                }
-
-                // blue bar
-                let bluebar = document.getElementById("blue-bar");
-                bluebar.style.color = "#000000";
-
-                // toolbar
-                let toolbar = document.getElementById("toolbar");
-                toolbar.style.backgroundColor = "#bdbdbd";
-                toolbar.style.color = "#000000";
-
-                // dark / light mode buttons
-                let darkModeButton = document.getElementById("dark-mode-button-dark");
-                let lightModeButton = document.getElementById("dark-mode-button-light");
-
-                darkModeButton.disabled = false;
-                lightModeButton.disabled = true;
-
-                // button group buttons
-                let button_group_button_elements = document.getElementsByClassName('button-group-button');
-                for(let i = 0; i < button_group_button_elements.length; ++i) {
-                    button_group_button_elements[i].style.backgroundColor = "inherit";
-
-                    if(button_group_button_elements[i].disabled) {
-                        button_group_button_elements[i].style.color = "#636363";
-                    } else {
-                        button_group_button_elements[i].style.color = "#000000";
-                    }
-                }
-
-                // button group
-                let button_group = document.getElementsByClassName('button-group');
-                for(let i = 0; i < button_group.length; ++i) {
-                    button_group[i].style.borderColor = "#000000";
-                }
-            }
-
-            matrix_mult = (a, b) => {
-                let a_num_rows = a.length;
-                let a_num_cols = a[0].length;
-                let b_num_cols = b[0].length;
-                let m = new Array(a_num_rows);
-
-                for (let r = 0; r < a_num_rows; ++r) {
-                    m[r] = new Array(b_num_cols);
-                    for (let c = 0; c < b_num_cols; ++c) {
-                        m[r][c] = 0;
-
-                        for (let i = 0; i < a_num_cols; ++i) {
-                            m[r][c] += a[r][i] * b[i][c];
-                        }
-                    }
-                }
-                return m;
-            }
-
-            print_matrix = (matrix) => {
-                for(let i = 0; i < matrix.length; i++) {
-                    for(let j = 0; j < matrix[0].length; j++) {
-                        console.log(matrix[i][j] + " ");
-                    }
-                    console.log("new row");
-                }
-            }
-
-            radians_to_degrees = (radians) => {
-                return radians * 180 / Math.PI;
+                currentStroke = "#" + red + green +  blue;
+                document.getElementById('shape-stroke-color-text').value = currentStroke;
+                document.getElementById('shape-stroke-color-text').style.backgroundColor = currentStroke;
             }
         </script>
     </head>
-    <body onload="draw(); disable_current_button();" onmousedown="mouse_pressed(event)" onmouseup="mouse_released(event)" onmousemove="mouse_move(event)" onkeydown="check_multiple_key_presses(event); undo()" onkeyup="check_multiple_key_presses(event);">
+    <body onload="Canvas.draw(); UI.disableCurrentButton();" onmousedown="Mouse.pressed(event)" onmouseup="Mouse.released(event)" onmousemove="Mouse.move(event)" onkeydown="Key.checkMultipleKeyPresses(event); Canvas.undo()" onkeyup="Key.checkMultipleKeyPresses(event);">
         <div id="toolbar">
-            <a onclick="save();">Save</a>
-            <a onclick="load();" >Load</a>
-            <a onclick="export_as_png();">Export as PNG</a>
+            <a onclick="File.save();">Save</a>
+            <a onclick="File.load();" >Load</a>
+            <a onclick="File.exportAsPNG();">Export as PNG</a>
             <span id="blue-bar">|</span>
-            <a onclick="undo();">Undo</a>
+            <a onclick="Canvas.undo();">Undo</a>
             <a onclick="redo();">Redo</a>
             <span class="button-group">
-                <button class="button-group-button" id="dark-mode-button-dark" onclick="darkMode();">☽</a>
-                <button disabled class="button-group-button"id="dark-mode-button-light" onclick="lightMode();">☼</a>
+                <button class="button-group-button" id="dark-mode-button-dark" onclick="UI.switchDisplayMode();">☽</a>
+                <button disabled class="button-group-button"id="dark-mode-button-light" onclick="UI.lightMode();">☼</a>
             </span>
         </div>
         <div id="left-side">
@@ -537,23 +540,23 @@
         <div id="tools">
             <div id="tools-transformations" class="section">
                 <h2>transformations</h2>
-                <button onclick="select_mode = !select_mode; console.log(select_mode);" type="button" value="sele">Select</button>
-                <button onclick="set_current_tool(this.value); disable_current_button();" type="button" value="rota">Rotate</button>
-                <button onclick="set_current_tool(this.value); disable_current_button();" type="button" value="scal">Scale</button>
-                <button onclick="set_current_tool(this.value); disable_current_button();" type="button" value="tran">Translate</button>
+                <button onclick="selectMode = !selectMode; console.log(selectMode);" type="button" value="sele">Select</button>
+                <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="rota">Rotate</button>
+                <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="scal">Scale</button>
+                <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="tran">Translate</button>
             </div>
 
             <div id="tools-shapes" class="section">
                 <h2>shapes</h2>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="circ">Circle</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="curv">Curve</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="elli">Ellipse</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="line">Line</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="pgon">Polygon</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="plin">Poly-Line</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="rect">Rectangle</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="squa">Square</button>
-                <button onclick="set_current_shape(this.value); disable_current_button();" type="button" value="tria">Triangle</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="circ">Circle</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="curv">Curve</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="elli">Ellipse</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="line">Line</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="pgon">Polygon</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="plin">Poly-Line</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="rect">Rectangle</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="squa">Square</button>
+                <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="tria">Triangle</button>
             </div>
 
             <div class="section">
@@ -571,13 +574,13 @@
                     </tr>
                     <tr>
                         <td class="rgb-range">
-                            <input type='text' value='10' id='shape-size-text' onchange="display_size('text', this.value)"/>
+                            <input type='text' value='10' id='shape-width-text' onchange="setCurrentSize('text', this.value)"/>
                         </td>
                         <td class="rgb-range">
                             <input disabled type='text' id='shape-fill-color-text' value="#000000"/><br>
                         </td>
                         <td class="rgb-range">
-                            <input disabled type='text' id='shape-stroke-color-text' onchange="set_current_stroke(this.value)" value="#000000"/>
+                            <input disabled type='text' id='shape-stroke-color-text' onchange="setCurrentStroke(this.value)" value="#000000"/>
                         </td>
                         <td>
                             
@@ -585,23 +588,23 @@
                     </tr>
                     <tr>
                         <td class="rgb-range">
-                            size: <input type='range' min='1' max='600' value='5' id='shape-size-range' onchange="display_size('range', this.value)"/>
+                            width: <input type='range' min='1' max='600' value='5' id='shape-width-range' onchange="setCurrentSize('range', this.value)"/>
                         </td>
                         <td class="rgb-range">
-                            red: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-r' onchange="set_current_fill()" /><br>
+                            red: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-r' onchange="setCurrentFill()" /><br>
                         </td>
                         <td class="rgb-range">
-                            red: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-r' onchange="set_current_stroke()" /><br>
+                            red: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-r' onchange="setCurrentStroke()" /><br>
                         </td>
                     </tr>
                     <tr>
                         <td>
                         </td>
                         <td class="rgb-range">
-                            green: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-g' onchange="set_current_fill()" /><br>
+                            green: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-g' onchange="setCurrentFill()" /><br>
                         </td>
                         <td class="rgb-range">
-                            green: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-g' onchange="set_current_stroke()" /><br>
+                            green: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-g' onchange="setCurrentStroke()" /><br>
                         </td>
                     </tr>
                     <tr>
@@ -609,10 +612,10 @@
                             
                         </td>
                         <td class="rgb-range">
-                            blue: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-b' onchange="set_current_fill()" />
+                            blue: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-b' onchange="setCurrentFill()" />
                         </td>
                         <td class="rgb-range">
-                            blue: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-b' onchange="set_current_stroke()" />
+                            blue: <input type='range' min='0' max='255' value='0' id='shape-stroke-color-range-b' onchange="setCurrentStroke()" />
                         </td>
                     </tr>
                 </table>

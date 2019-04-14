@@ -1,36 +1,36 @@
 var ShapeFunctions = {
     rotate : (x, y, rotation) => {
-        let rotation_matrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
-        let origin_position_matrix = [[x], [y], [1]];
+        let rotationMatrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
+        let originPositionMatrix = [[x], [y], [1]];
     
-        let new_position = matrix_mult(rotation_matrix, origin_position_matrix);
+        let newPosition = Matrix.multiply(rotationMatrix, originPositionMatrix);
     
-        return new_position;
+        return newPosition;
     },
     
     select : () => {
-        if(mouse_is_pressed && select_mode && !!drawn_shapes) {
-            let mx = x_pressed;
-            let my = y_pressed;
-            let shape_found = false;
+        if(Mouse.isPressed && selectMode && !!Canvas.drawnShapes) {
+            let mx = Mouse.pressedX;
+            let my = Mouse.pressedY;
+            let shapeFound = false;
     
-            for(let i = parseInt(drawn_shapes.length) - 1; i > 0 && !shape_found; --i) {
-                let x_min = drawn_shapes[i][2][0];
-                let x_max = x_min + drawn_shapes[i][2][2];
-                let y_min = drawn_shapes[i][2][1];
-                let y_max = y_min + drawn_shapes[i][2][2];
+            for(let i = parseInt(Canvas.drawnShapes.length) - 1; i > 0 && !shapeFound; --i) {
+                let minX = Canvas.drawnShapes[i][2][0];
+                let maxX = minX + Canvas.drawnShapes[i][2][2];
+                let minY = Canvas.drawnShapes[i][2][1];
+                let maxY = minY + Canvas.drawnShapes[i][2][2];
     
-                [x_max, x_min] = x_max < x_min ? [x_min, x_max] : [x_max, x_min]; // swap values if necessary
+                [maxX, minX] = maxX < minX ? [minX, maxX] : [maxX, minX]; // swap values if necessary
     
-                [y_max, y_min] = y_max < y_min ? [y_min, y_max] : [y_max, y_min]; // swap values if necessary
+                [maxY, minY] = maxY < minY ? [minY, maxY] : [maxY, minY]; // swap values if necessary
     
-                let collision = mx >= x_min && mx <= x_max && my >= y_min && my <= y_max ? true : false;
+                let collision = mx >= minX && mx <= maxX && my >= minY && my <= maxY ? true : false;
     
                 if(collision) {
-                    shape_found = true;
-                    console.log(x_min + " < " + mx + " < " + x_max);
-                    console.log(y_min + " < " + my + " < " + y_max);
-                    console.log(drawn_shapes[i]);
+                    shapeFound = true;
+                    console.log(minX + " < " + mx + " < " + maxX);
+                    console.log(minY + " < " + my + " < " + maxY);
+                    console.log(Canvas.drawnShapes[i]);
                 }
             }
         }
@@ -40,54 +40,54 @@ var ShapeFunctions = {
         // *** need to separate select from the rest of the tools probably
     },
 
-    translate : (x, y, translate_x, translate_y) => {
-        let translation_matrix = [[1, 0, translate_x], [0, 1, translate_y], [0, 0, 1]];
-        let position_matrix = [[x], [y], [1]];
-        let new_position = matrix_mult(translation_matrix, position_matrix);
+    translate : (x, y, translateX, translateY) => {
+        let translationMatrix = [[1, 0, translateX], [0, 1, translateY], [0, 0, 1]];
+        let positionMatrix = [[x], [y], [1]];
+        let newPosition = Matrix.multiply(translationMatrix, positionMatrix);
 
-        return new_position;
+        return newPosition;
     }
 }
 
 class Shape {
-    constructor(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color) {
-        this.x_origin = x_origin;
-        this.y_origin = y_origin;
+    constructor(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor) {
+        this.originX = originX;
+        this.originY = originY;
         this.width = width;
         this.height = height;
-        this.stroke_color = stroke_color;
-        this.fill_color = fill_color;
-        this.mouse_x = mouse_x;
-        this.mouse_y = mouse_y;
-        this._shape_type = 'shap';
+        this.strokeColor = strokeColor;
+        this.fillColor = fillColor;
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+        this._shapeType = 'shap';
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
+        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
     draw = () => {
-        switch(current_tool) {
+        switch(currentTool) {
             case 'rota':
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 break;
             case 'scal':
-                this.width = this.mouse_x - this.x_origin;
-                this.height = this.mouse_y - this.y_origin;
+                this.width = this.mouseX - this.originX;
+                this.height = this.mouseY - this.originY;
                 
                 break;
             case 'sele':
                 break;
             case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
                 
-                this.x_origin = tran[0][0];
-                this.y_origin = tran[1][0];
+                this.originX = tran[0][0];
+                this.originY = tran[1][0];
                 
                 break;
             default:
@@ -97,56 +97,56 @@ class Shape {
 
         // draw rectangle
         context.beginPath();
-        context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin);
-        context.lineTo(this.x_origin + this.width, this.y_origin + this.height);
-        context.lineTo(this.x_origin, this.y_origin +this.height);
+        context.moveTo(this.originX, this.originY);
+        context.lineTo(this.originX + this.width, this.originY);
+        context.lineTo(this.originX + this.width, this.originY + this.height);
+        context.lineTo(this.originX, this.originY +this.height);
         context.closePath();
-        //context.rect(this.x_origin, this.y_origin, this.width, this.height);
+        //context.rect(this.originX, this.originY, this.width, this.height);
     
         // change fill color
-        context.fillStyle = this.fill_color;
+        context.fillStyle = this.fillColor;
         context.fill();
     
         // change stroke color
-        context.strokeStyle = this.stroke_color;
+        context.strokeStyle = this.strokeColor;
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("rect(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("rect(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
 
     load = (shape) => {
-        let json_shape = JSON.parse(shape);
-        this.x_origin = json_shape.x_origin;
-        this.y_origin = json_shape.y_origin;
-        this.width = json_shape.width;
-        this.height = json_shape.height;
-        this.mouse_x = json_shape.mouse_x;
-        this.mouse_y = json_shape.mouse_y;
-        this.stroke_color = json_shape.stroke_color;
-        this.fill_color = json_shape.fill_color;
+        let jsonShape = JSON.parse(shape);
+        this.originX = jsonShape.originX;
+        this.originY = jsonShape.originY;
+        this.width = jsonShape.width;
+        this.height = jsonShape.height;
+        this.mouseX = jsonShape.mouseX;
+        this.mouseY = jsonShape.mouseY;
+        this.strokeColor = jsonShape.strokeColor;
+        this.fillColor = jsonShape.fillColor;
     }
 
     save = () => {
-        if(!!drawn_shapes[0]) { // simplify null, undefined and false to false
-            drawn_shapes.push([this._shape_type, current_tool, this.toString()]);
+        if(!!Canvas.drawnShapes[0]) { // simplify null, undefined and false to false
+            Canvas.drawnShapes.push([this._shapeType, currentTool, this.toString()]);
         } else {
-            drawn_shapes[0] = [this._shape_type, current_tool, this.toString()];
+            Canvas.drawnShapes[0] = [this._shapeType, currentTool, this.toString()];
         }
     }
 
     toJSON = () => {
         return {
-            x_origin: this.x_origin,
-            y_origin: this.y_origin,
+            originX: this.originX,
+            originY: this.originY,
             width: this.width,
             height: this.height,
-            mouse_x: this.mouse_x,
-            mouse_y: this.mouse_y,
-            stroke_color: this.stroke_color,
-            fill_color: this.fill_color,
+            mouseX: this.mouseX,
+            mouseY: this.mouseY,
+            strokeColor: this.strokeColor,
+            fillColor: this.fillColor,
         }
     }
 
@@ -157,43 +157,43 @@ class Shape {
 }
 
 class Ellipse extends Shape {
-    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
-        this._shape_type = 'elli';
+    constructor(originX = 0, originY = 0, width = 1, height = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
+        super(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor);
+        this._shapeType = 'elli';
         this._rotation = 0;
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
+        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
     draw = () => {
-        switch(current_tool) {
+        switch(currentTool) {
             case 'rota':
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 this._rotation = rota;
 
                 break;
             case 'scal':
-                let temp_end_x = Math.abs(this.mouse_x - this.x_origin);
-                let temp_end_y = Math.abs(this.mouse_y - this.y_origin);
+                let tempEndX = Math.abs(this.mouseX - this.originX);
+                let tempEndY = Math.abs(this.mouseY - this.originY);
                 
-                this.width = temp_end_x;
-                this.height = temp_end_y;
+                this.width = tempEndX;
+                this.height = tempEndY;
                 
                 break;
             case 'sele':
                 break;
             case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
                 
-                this.x_origin = tran[0][0];
-                this.y_origin = tran[1][0];
+                this.originX = tran[0][0];
+                this.originY = tran[1][0];
                 
                 break;
             default:
@@ -203,55 +203,55 @@ class Ellipse extends Shape {
 
         // draw ellipse
         context.beginPath();
-        context.ellipse(this.x_origin, this.y_origin, this.width, this.height, this._rotation, 0, 2 * Math.PI);
+        context.ellipse(this.originX, this.originY, this.width, this.height, this._rotation, 0, 2 * Math.PI);
     
         // change fill color
-        context.fillStyle = this.fill_color;
+        context.fillStyle = this.fillColor;
         context.fill();
     
         // change stroke color
-        context.strokeStyle = this.stroke_color;
+        context.strokeStyle = this.strokeColor;
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("circle(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("circle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
 }
 
 class Circle extends Ellipse {
-    constructor(x_origin = 0, y_origin = 0, radius = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        super(x_origin, y_origin, radius, radius, mouse_x, mouse_y, stroke_color, fill_color);
-        this._shape_type = 'circ';
+    constructor(originX = 0, originY = 0, radius = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
+        super(originX, originY, radius, radius, mouseX, mouseY, strokeColor, fillColor);
+        this._shapeType = 'circ';
         this._rotation = 0;
     }
 
     draw = () => {
-        switch(current_tool) {
+        switch(currentTool) {
             case 'rota':
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 this._rotation = rota;
 
                 break;
             case 'scal':
-                let temp_end = Math.abs(this.mouse_x - this.x_origin) > Math.abs(this.mouse_y - this.y_origin) ? Math.abs(this.mouse_x - this.x_origin) : Math.abs(this.mouse_y - this.y_origin);
+                let tempEnd = Math.abs(this.mouseX - this.originX) > Math.abs(this.mouseY - this.originY) ? Math.abs(this.mouseX - this.originX) : Math.abs(this.mouseY - this.originY);
                 
-                this.width = temp_end;
-                this.height = temp_end;
+                this.width = tempEnd;
+                this.height = tempEnd;
                 
                 break;
             case 'sele':
                 break;
             case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
                 
-                this.x_origin = tran[0][0];
-                this.y_origin = tran[1][0];
+                this.originX = tran[0][0];
+                this.originY = tran[1][0];
                 
                 break;
             default:
@@ -261,72 +261,79 @@ class Circle extends Ellipse {
 
         // draw circle
         context.beginPath();
-        context.ellipse(this.x_origin, this.y_origin, this.width, this.height, this._rotation, 0, 2 * Math.PI);
+        context.ellipse(this.originX, this.originY, this.width, this.height, this._rotation, 0, 2 * Math.PI);
     
         // change fill color
-        context.fillStyle = this.fill_color;
+        context.fillStyle = this.fillColor;
         context.fill();
     
         // change stroke color
-        context.strokeStyle = this.stroke_color;
+        context.strokeStyle = this.strokeColor;
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("circle(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("circle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
 }
 
 class Line extends Shape {
-    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        // width and height are actually x_end / y_end in this case
-        super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
-        this._shape_type = 'line';
-        this._calculated_width = 0; // needed to keep original width and height in tact since re-drawing after the rotation was calculating based on the rotated width and height
-        this._calculated_height = 0;
+    constructor(originX = 0, originY = 0, width = 1, height = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
+        // width and height are actually endX / endY in this case
+        super(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor);
+        this._shapeType = 'line';
+        this._calculatedWidth = 0; // needed to keep original width and height in tact since re-drawing after the rotation was calculating based on the rotated width and height
+        this._calculatedHeight = 0;
+        
+        this._points = [
+            [], // (originX, originY)
+            [], // (endX, endY)
+        ];
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
+        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
     draw = () => {
-        switch(current_tool) {
+        this.savePoints();
+
+        switch(currentTool) {
             case 'rota':
                 // might use this later to rotate around center of line
-                // let midpoint_x = this.x_origin + Math.abs(this.width - this.x_origin) / 2;
-                // let midpoint_y = this.y_origin + Math.abs(this.height - this.y_origin) / 2;
+                // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
+                // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
 
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 // rotate(length of line, length of line, rotation)
-                let rotate_around_origin = ShapeFunctions.rotate(this.width - this.x_origin, this.height - this.y_origin, rota);
-                let tran_back = ShapeFunctions.translate(rotate_around_origin[0][0], rotate_around_origin[1][0], this.x_origin, this.y_origin);
+                let rotateAroundOrigin = ShapeFunctions.rotate(this.width - this.originX, this.height - this.originY, rota);
+                let translateBack = ShapeFunctions.translate(rotateAroundOrigin[0][0], rotateAroundOrigin[1][0], this.originX, this.originY);
 
-                this._calculated_width = tran_back[0][0];
-                this._calculated_height = tran_back[1][0];
+                this._points[1][0] = translateBack[0][0];
+                this._points[1][1] = translateBack[1][0];
 
                 break;
             case 'scal':
-                this.width = this.mouse_x;
-                this.height = this.mouse_y;
+                this.width = this.mouseX;
+                this.height = this.mouseY;
 
-                this._calculated_width = this.mouse_x;
-                this._calculated_height = this.mouse_y;
+                this._points[1][0] = this.mouseX;
+                this._points[1][1] = this.mouseY;
                 
                 break;
             case 'sele':
                 break;
             case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
                 
-                let tran_origin = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
-                let tran_end = ShapeFunctions.translate(this.width, this.height, x_distance, y_distance);
+                let translateOrigin = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
+                let translateEnd = ShapeFunctions.translate(this.width, this.height, xDistance, yDistance);
                 
-                [this.x_origin, this.y_origin] = [tran_origin[0][0], tran_origin[1][0]];
-                [this._calculated_width, this._calculated_height] = [tran_end[0][0], tran_end[1][0]];
+                [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
+                [this._points[1][0], this._points[1][1]] = [translateEnd[0][0], translateEnd[1][0]];
                 
                 break;
             default:
@@ -335,73 +342,81 @@ class Line extends Shape {
         }
 
         // draw line
+        console.log(this._points);
         context.beginPath();
-        context.moveTo(this.x_origin, this.y_origin);
-        context.lineTo(this._calculated_width, this._calculated_height);
+        context.moveTo(this._points[0][0], this._points[0][1]);
+        context.lineTo(this._points[1][0], this._points[1][1]);
         context.closePath();
     
         // change stroke color
-        context.strokeStyle = this.stroke_color;
+        context.strokeStyle = this.strokeColor;
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("line(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this._calculated_width + ", height = " + this._calculated_height + ")");
+            console.log("line(x = " + this.originX + ", y = " + this.originY + ", width = " + this._calculatedWidth + ", height = " + this._calculatedHeight + ")");
         }
+    }
+
+    savePoints = () => {
+        this._points = [
+            [this.originX, this.originY], // (originX, originY)
+            [this.width, this.height]  // (endX, endY)
+        ];
     }
 }
 
 // i want to rewrite the below as n-gons where the number of sides is a new parameter... this will make polygons easier to work with
 class Rectangle extends Shape {
-    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
-        this._shape_type = 'rect';
+    constructor(originX = 0, originY = 0, width = 1, height = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
+        super(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor);
+        this._shapeType = 'rect';
         this._points = [
-            [this.x_origin, this.y_origin], // top left
-            [this.x_origin + this.width, this.y_origin], // top right
-            [this.x_origin + this.width, this.y_origin + this.height], // bottom right
-            [this.x_origin, this.y_origin + this.height], // bottom left
+            [this.originX, this.originY], // top left
+            [this.originX + this.width, this.originY], // top right
+            [this.originX + this.width, this.originY + this.height], // bottom right
+            [this.originX, this.originY + this.height], // bottom left
         ];
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
+        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
     draw = () => {
-        switch(current_tool) {
+        switch(currentTool) {
             case 'rota':
                 // might use this later to rotate around center of line
-                // let midpoint_x = this.x_origin + Math.abs(this.width - this.x_origin) / 2;
-                // let midpoint_y = this.y_origin + Math.abs(this.height - this.y_origin) / 2;
+                // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
+                // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
 
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 // top right
-                let rotate_top_right_around_origin = ShapeFunctions.rotate(this.width, 0, rota);
-                let tran_back_top_right = ShapeFunctions.translate(rotate_top_right_around_origin[0][0], rotate_top_right_around_origin[1][0], this.x_origin, this.y_origin);
+                let rotateTopRightAroundOrigin = ShapeFunctions.rotate(this.width, 0, rota);
+                let translateBackTopRight = ShapeFunctions.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
 
-                this._points[1][0] = tran_back_top_right[0][0];
-                this._points[1][1] = tran_back_top_right[1][0];
+                this._points[1][0] = translateBackTopRight[0][0];
+                this._points[1][1] = translateBackTopRight[1][0];
 
                 // bottom right
-                let rotate_bottom_right_around_origin = ShapeFunctions.rotate(this.width, this.height, rota);
-                let tran_back_bottom_right = ShapeFunctions.translate(rotate_bottom_right_around_origin[0][0], rotate_bottom_right_around_origin[1][0], this.x_origin, this.y_origin);
+                let rotateBottomRightAroundOrigin = ShapeFunctions.rotate(this.width, this.height, rota);
+                let translateBackBottomRight = ShapeFunctions.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
 
-                this._points[2][0] = tran_back_bottom_right[0][0];
-                this._points[2][1] = tran_back_bottom_right[1][0];
+                this._points[2][0] = translateBackBottomRight[0][0];
+                this._points[2][1] = translateBackBottomRight[1][0];
 
                 // bottom left
-                let rotate_bottom_left_around_origin = ShapeFunctions.rotate(0, this.height, rota);
-                let tran_back_bottom_left = ShapeFunctions.translate(rotate_bottom_left_around_origin[0][0], rotate_bottom_left_around_origin[1][0], this.x_origin, this.y_origin);
+                let rotateBottomLeftAroundOrigin = ShapeFunctions.rotate(0, this.height, rota);
+                let translateBackBottomLeft = ShapeFunctions.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
 
-                this._points[3][0] = tran_back_bottom_left[0][0];
-                this._points[3][1] = tran_back_bottom_left[1][0];
+                this._points[3][0] = translateBackBottomLeft[0][0];
+                this._points[3][1] = translateBackBottomLeft[1][0];
 
                 break;
             case 'scal':
-                this.width = this.mouse_x - this.x_origin;
-                this.height = this.mouse_y - this.y_origin;
+                this.width = this.mouseX - this.originX;
+                this.height = this.mouseY - this.originY;
 
                 this.recalculatePoints();
                 
@@ -409,13 +424,13 @@ class Rectangle extends Shape {
             case 'sele':
                 break;
             case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
                 
-                this.x_origin = tran[0][0];
-                this.y_origin = tran[1][0];
+                this.originX = tran[0][0];
+                this.originY = tran[1][0];
 
                 this.recalculatePoints();
                 
@@ -427,78 +442,78 @@ class Rectangle extends Shape {
 
         // draw rectangle
         context.beginPath();
-        context.moveTo(this.x_origin, this.y_origin);              // top left
+        context.moveTo(this.originX, this.originY);              // top left
         context.lineTo(this._points[1][0], this._points[1][1]);    // top right
         context.lineTo(this._points[2][0], this._points[2][1]);    // bottom right
         context.lineTo(this._points[3][0], this._points[3][1]);    // bottom left
         context.closePath();
     
         // change fill color
-        context.fillStyle = this.fill_color;
+        context.fillStyle = this.fillColor;
         context.fill();
     
         // change stroke color
-        context.strokeStyle = this.stroke_color;
+        context.strokeStyle = this.strokeColor;
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("rect(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("rect(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
 
     recalculatePoints = () => {
         this._points = [
-            [this.x_origin, this.y_origin], // top left
-            [this.x_origin + this.width, this.y_origin], // top right
-            [this.x_origin + this.width, this.y_origin + this.height], // bottom right
-            [this.x_origin, this.y_origin + this.height], // bottom left
+            [this.originX, this.originY], // top left
+            [this.originX + this.width, this.originY], // top right
+            [this.originX + this.width, this.originY + this.height], // bottom right
+            [this.originX, this.originY + this.height], // bottom left
         ];
     }
 }
 
 class Square extends Rectangle {
-    constructor(x_origin = 0, y_origin = 0, size = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        super(x_origin, y_origin, size, size, mouse_x, mouse_y, stroke_color, fill_color);
-        this._shape_type = 'squa';
+    constructor(originX = 0, originY = 0, size = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
+        super(originX, originY, size, size, mouseX, mouseY, strokeColor, fillColor);
+        this._shapeType = 'squa';
     }
 }
 
 class Triangle extends Shape {
-    constructor(x_origin = 0, y_origin = 0, width = 1, height = 1, mouse_x = 0, mouse_y = 0, stroke_color = '#000000', fill_color = '#000000') {
-        super(x_origin, y_origin, width, height, mouse_x, mouse_y, stroke_color, fill_color);
-        this._shape_type = 'tria';
+    constructor(originX = 0, originY = 0, width = 1, height = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
+        super(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor);
+        this._shapeType = 'tria';
     }
 
     checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.x_origin && mouseX <= this.x_origin + width && mouseY >= this.y_origin && mouseY <= this.y_origin + height;
+        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
     draw = () => {
-        switch(current_tool) {
+        switch(currentTool) {
             case 'rota':
-                let rota = calculate_rotation(this.x_origin, this.y_origin, this.mouse_x, this.mouse_y);
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 this.calculatePoints();
 
                 // bottom right
-                let rotate_bottom_right_around_origin = ShapeFunctions.rotate(this.width, this.height, rota);
-                let tran_back_bottom_right = ShapeFunctions.translate(rotate_bottom_right_around_origin[0][0], rotate_bottom_right_around_origin[1][0], this.x_origin, this.y_origin);
+                let rotateBottomRightAroundOrigin = ShapeFunctions.rotate(this.width, this.height, rota);
+                let translateBackBottomRight = ShapeFunctions.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
 
-                this._points[1][0] = tran_back_bottom_right[0][0];
-                this._points[1][1] = tran_back_bottom_right[1][0];
+                this._points[1][0] = translateBackBottomRight[0][0];
+                this._points[1][1] = translateBackBottomRight[1][0];
 
                 // bottom left
-                let rotate_bottom_left_around_origin = ShapeFunctions.rotate(0, this.height, rota);
-                let tran_back_bottom_left = ShapeFunctions.translate(rotate_bottom_left_around_origin[0][0], rotate_bottom_left_around_origin[1][0], this.x_origin, this.y_origin);
+                let rotateBottomLeftAroundOrigin = ShapeFunctions.rotate(0, this.height, rota);
+                let translateBackBottomLeft = ShapeFunctions.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
 
-                this._points[2][0] = tran_back_bottom_left[0][0];
-                this._points[2][1] = tran_back_bottom_left[1][0];
+                this._points[2][0] = translateBackBottomLeft[0][0];
+                this._points[2][1] = translateBackBottomLeft[1][0];
 
                 break;
             case 'scal':
-                this.width = this.mouse_x - this.x_origin;
-                this.height = this.mouse_y - this.y_origin;
+                this.width = this.mouseX - this.originX;
+                this.height = this.mouseY - this.originY;
 
                 this.calculatePoints();
                 
@@ -506,13 +521,13 @@ class Triangle extends Shape {
             case 'sele':
                 break;
             case 'tran':
-                let x_distance = this.mouse_x - this.x_origin;
-                let y_distance = this.mouse_y - this.y_origin;
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.x_origin, this.y_origin, x_distance, y_distance);
+                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
                 
-                this.x_origin = tran[0][0];
-                this.y_origin = tran[1][0];
+                this.originX = tran[0][0];
+                this.originY = tran[1][0];
 
                 this.calculatePoints();
                 
@@ -532,23 +547,23 @@ class Triangle extends Shape {
         context.closePath();
     
         // change fill color
-        context.fillStyle = this.fill_color;
+        context.fillStyle = this.fillColor;
         context.fill();
     
         // change stroke color
-        context.strokeStyle = this.stroke_color;
+        context.strokeStyle = this.strokeColor;
         context.stroke();
     
         if(DEBUG == true) {
-            console.log("triangle(x = " + this.x_origin + ", y = " + this.y_origin + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("triangle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
 
     calculatePoints = () => {
         this._points = [
-            [this.x_origin, this.y_origin], // top left
-            [this.x_origin + this.width, this.y_origin + this.height], // bottom right
-            [this.x_origin, this.y_origin + this.height], // bottom left
+            [this.originX, this.originY], // top left
+            [this.originX + this.width, this.originY + this.height], // bottom right
+            [this.originX, this.originY + this.height], // bottom left
         ];
     }
 }
