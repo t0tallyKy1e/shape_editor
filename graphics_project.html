@@ -111,17 +111,31 @@
             }
 
             var File = {
+                // logic for saving found here: https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file#answer-34156339
+                // logic for loading found here: 
+
                 exportAsPNG : () => {
-                    window.open(canvas.toDataURL()); // if drawings are all black, nothing shows
-                    console.log(canvas.toDataURL());
+                    let canvasData = canvas.toDataURL();
+                    let link = document.createElement("a");
+                    let file = new Blob([canvasData], {type : 'image/png'});
+                    link.href = canvasData;
+                    let fileName = prompt('Please enter a file name: ', '');
+                    link.download = fileName;
+                    link.click();
                 },
 
                 load : () => {
-
+                    // console.log(JSON.parse(jsonShapeData)); // load
                 },
 
                 save : () => {
-
+                    let jsonShapeData = JSON.stringify(Canvas.drawnShapes);
+                    let link = document.createElement("a");
+                    let file = new Blob([jsonShapeData], {type : 'application/json'});
+                    link.href = URL.createObjectURL(file);
+                    let fileName = prompt('Please enter a file name: ', '');
+                    link.download = fileName;
+                    link.click();
                 }
             }
 
