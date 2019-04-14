@@ -444,6 +444,12 @@
             setCurrentShape = (shape) => {
                 currentShape = shape;
                 UI.switchDisplayMode();
+
+                if(shape == 'circ' || shape == 'squa') {
+                    currentWidth = currentWidth >= currentHeight ? currentWidth : currentHeight;
+                    currentHeight = currentHeight >= currentWidth ? currentHeight : currentWidth;
+                    setCurrentSize(currentWidth, currentHeight);
+                }
             }
 
             setCurrentTool = (tool) => {
