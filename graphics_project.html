@@ -15,7 +15,8 @@
 
             currentFill = '#000000';
             currentShape = 'tria';
-            currentSize = 0;
+            currentHeight = 10;
+            currentWidth = 10;
             currentStroke = '#000000';
             currentTool = 'rota';
 
@@ -37,7 +38,7 @@
 
                     Mouse.isPressed = false;
                     setCurrentShape(currentShape);
-                    setCurrentSize();
+                    setCurrentSize(currentWidth, currentHeight);
                     UI.disableCurrentButton();
                     UI.switchDisplayMode();
                     setCurrentFill();
@@ -199,17 +200,17 @@
 
                         switch(currentShape) {
                             case "circ":
-                                tempShape = new Circle(Mouse.pressedX, Mouse.pressedY, currentSize / 2, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape = new Circle(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
                                 tempShape.draw();
                                 break;
                             case "curv":
                                 break;
                             case "elli":
-                                tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentSize / 2, currentSize / 2, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, currentHeight / 2, Mouse.moveX, Mouse.moveY, currentStroke);
                                 tempShape.draw();
                                 break;
                             case "line":
-                                tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentSize, Mouse.pressedY + currentSize, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentWidth, Mouse.pressedY + currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
                                 tempShape.draw();
                                 break;
                             case "pgon":
@@ -217,15 +218,15 @@
                             case "plin":
                                 break;
                             case "rect":
-                                tempShape = new Rectangle(Mouse.pressedX, Mouse.pressedY, currentSize, currentSize, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape = new Rectangle(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
                                 tempShape.draw();
                                 break;
                             case "squa":
-                                tempShape = new Square(Mouse.pressedX, Mouse.pressedY, currentSize, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape = new Square(Mouse.pressedX, Mouse.pressedY, currentWidth, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
                                 tempShape.draw();
                                 break;
                             case "tria":
-                                tempShape = new Triangle(Mouse.pressedX, Mouse.pressedY, currentSize, currentSize, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape = new Triangle(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
                                 tempShape.draw();
                                 break;
                             default:
@@ -465,14 +466,23 @@
                 document.getElementById('shape-fill-color-text').style.backgroundColor = currentFill;
             }
 
-            setCurrentSize = (type, size) => {
-                if(type == 'text') {
-                    document.getElementById('shape-width-range').value = document.getElementById('shape-width-text').value;
-                } else if (type == 'range') {
-                    document.getElementById('shape-width-text').value = document.getElementById('shape-width-range').value;
+            setCurrentSize = (width, height) => {
+                if(width == currentWidth && (currentShape == 'circ' || currentShape == 'squa')) {
+                    currentWidth = parseInt(height);
+                } else {
+                    currentWidth = parseInt(width);
                 }
 
-                currentSize = parseInt(document.getElementById('shape-width-text').value);
+                if(height == currentHeight && (currentShape == 'circ' || currentShape == 'squa')) {
+                    currentHeight = parseInt(width);
+                } else {
+                    currentHeight = parseInt(height);
+                }
+
+                document.getElementById('shape-width-range').value = currentWidth;
+                document.getElementById('shape-height-range').value = currentHeight;
+                document.getElementById('shape-width-text').value = currentWidth;
+                document.getElementById('shape-height-text').value = currentHeight;
             }
 
             setCurrentStroke = () => {
@@ -544,7 +554,7 @@
                 <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="tria">Triangle</button>
             </div>
 
-            <div class="section">
+            <div class="section" id="tools-shape-parameters">
                 <table> <!-- GET RID OF THE TABLE LAYOUT-->
                     <tr>
                         <td>
@@ -559,7 +569,9 @@
                     </tr>
                     <tr>
                         <td class="rgb-range">
-                            <input type='text' value='10' id='shape-width-text' onchange="setCurrentSize('text', this.value)"/>
+                            <input style="width: 35%" type='text' value='10' id='shape-width-text' onchange="setCurrentSize(this.value, currentHeight)"/>
+                            x
+                            <input style="width: 35%" type='text' value='10' id='shape-height-text' onchange="setCurrentSize(currentWidth, this.value)"/>
                         </td>
                         <td class="rgb-range">
                             <input disabled type='text' id='shape-fill-color-text' value="#000000"/><br>
@@ -573,7 +585,7 @@
                     </tr>
                     <tr>
                         <td class="rgb-range">
-                            width: <input type='range' min='1' max='600' value='5' id='shape-width-range' onchange="setCurrentSize('range', this.value)"/>
+                            width: <input type='range' min='1' max='600' value='5' id='shape-width-range' onchange="setCurrentSize(this.value, currentHeight)"/>
                         </td>
                         <td class="rgb-range">
                             red: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-r' onchange="setCurrentFill()" /><br>
@@ -583,7 +595,8 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
+                        <td class="rgb-range">
+                            height: <input type='range' min='1' max='600' value='5' id='shape-height-range' onchange="setCurrentSize(currentWidth, this.value)"/>
                         </td>
                         <td class="rgb-range">
                             green: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-g' onchange="setCurrentFill()" /><br>

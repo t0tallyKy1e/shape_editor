@@ -1,4 +1,4 @@
-var ShapeFunctions = {
+var Transform = {
     rotate : (x, y, rotation) => {
         let rotationMatrix = [[Math.cos(rotation), -1 * Math.sin(rotation), 0],[Math.sin(rotation), Math.cos(rotation), 0], [0, 0, 1]];
         let originPositionMatrix = [[x], [y], [1]];
@@ -84,7 +84,7 @@ class Shape {
                 let xDistance = this.mouseX - this.originX;
                 let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
                 
                 this.originX = tran[0][0];
                 this.originY = tran[1][0];
@@ -190,7 +190,7 @@ class Ellipse extends Shape {
                 let xDistance = this.mouseX - this.originX;
                 let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
                 
                 this.originX = tran[0][0];
                 this.originY = tran[1][0];
@@ -248,7 +248,7 @@ class Circle extends Ellipse {
                 let xDistance = this.mouseX - this.originX;
                 let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
                 
                 this.originX = tran[0][0];
                 this.originY = tran[1][0];
@@ -308,8 +308,8 @@ class Line extends Shape {
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 // rotate(length of line, length of line, rotation)
-                let rotateAroundOrigin = ShapeFunctions.rotate(this.width - this.originX, this.height - this.originY, rota);
-                let translateBack = ShapeFunctions.translate(rotateAroundOrigin[0][0], rotateAroundOrigin[1][0], this.originX, this.originY);
+                let rotateAroundOrigin = Transform.rotate(this.width - this.originX, this.height - this.originY, rota);
+                let translateBack = Transform.translate(rotateAroundOrigin[0][0], rotateAroundOrigin[1][0], this.originX, this.originY);
 
                 this._points[1][0] = translateBack[0][0];
                 this._points[1][1] = translateBack[1][0];
@@ -329,8 +329,8 @@ class Line extends Shape {
                 let xDistance = this.mouseX - this.originX;
                 let yDistance = this.mouseY - this.originY;
                 
-                let translateOrigin = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
-                let translateEnd = ShapeFunctions.translate(this.width, this.height, xDistance, yDistance);
+                let translateOrigin = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+                let translateEnd = Transform.translate(this.width, this.height, xDistance, yDistance);
                 
                 [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
                 [this._points[1][0], this._points[1][1]] = [translateEnd[0][0], translateEnd[1][0]];
@@ -342,7 +342,6 @@ class Line extends Shape {
         }
 
         // draw line
-        console.log(this._points);
         context.beginPath();
         context.moveTo(this._points[0][0], this._points[0][1]);
         context.lineTo(this._points[1][0], this._points[1][1]);
@@ -393,22 +392,22 @@ class Rectangle extends Shape {
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
                 // top right
-                let rotateTopRightAroundOrigin = ShapeFunctions.rotate(this.width, 0, rota);
-                let translateBackTopRight = ShapeFunctions.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
+                let rotateTopRightAroundOrigin = Transform.rotate(this.width, 0, rota);
+                let translateBackTopRight = Transform.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
 
                 this._points[1][0] = translateBackTopRight[0][0];
                 this._points[1][1] = translateBackTopRight[1][0];
 
                 // bottom right
-                let rotateBottomRightAroundOrigin = ShapeFunctions.rotate(this.width, this.height, rota);
-                let translateBackBottomRight = ShapeFunctions.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
+                let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
+                let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
 
                 this._points[2][0] = translateBackBottomRight[0][0];
                 this._points[2][1] = translateBackBottomRight[1][0];
 
                 // bottom left
-                let rotateBottomLeftAroundOrigin = ShapeFunctions.rotate(0, this.height, rota);
-                let translateBackBottomLeft = ShapeFunctions.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
+                let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
+                let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
 
                 this._points[3][0] = translateBackBottomLeft[0][0];
                 this._points[3][1] = translateBackBottomLeft[1][0];
@@ -427,7 +426,7 @@ class Rectangle extends Shape {
                 let xDistance = this.mouseX - this.originX;
                 let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
                 
                 this.originX = tran[0][0];
                 this.originY = tran[1][0];
@@ -497,15 +496,15 @@ class Triangle extends Shape {
                 this.calculatePoints();
 
                 // bottom right
-                let rotateBottomRightAroundOrigin = ShapeFunctions.rotate(this.width, this.height, rota);
-                let translateBackBottomRight = ShapeFunctions.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
+                let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
+                let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
 
                 this._points[1][0] = translateBackBottomRight[0][0];
                 this._points[1][1] = translateBackBottomRight[1][0];
 
                 // bottom left
-                let rotateBottomLeftAroundOrigin = ShapeFunctions.rotate(0, this.height, rota);
-                let translateBackBottomLeft = ShapeFunctions.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
+                let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
+                let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
 
                 this._points[2][0] = translateBackBottomLeft[0][0];
                 this._points[2][1] = translateBackBottomLeft[1][0];
@@ -524,7 +523,7 @@ class Triangle extends Shape {
                 let xDistance = this.mouseX - this.originX;
                 let yDistance = this.mouseY - this.originY;
 
-                let tran = ShapeFunctions.translate(this.originX, this.originY, xDistance, yDistance);
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
                 
                 this.originX = tran[0][0];
                 this.originY = tran[1][0];

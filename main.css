@@ -199,3 +199,7 @@ td {
     right: 10px;
     width: 50%;
 }
+
+#tools-shape-parameters td {
+    width: 30%;
+}
