@@ -182,7 +182,6 @@
                         Mouse.pressedY = event.pageY - pageMarginY;
 
                         Mouse.isPressed = true;
-                        // select();
 
                         document.getElementById('mouse_pressed_x').innerHTML = Mouse.pressedX;
                         document.getElementById('mouse_pressed_y').innerHTML = Mouse.pressedY;
@@ -245,8 +244,10 @@
                     Mouse.releasedY = event.pageY - pageMarginY;
 
                     Mouse.isPressed = false;
-                    
-                    tempShape.save();
+
+                    if(!!tempShape) {
+                        tempShape.save();
+                    }
                     
                     document.getElementById('mouse_released_x').innerHTML = Mouse.releasedX;
                     document.getElementById('mouse_released_y').innerHTML = Mouse.releasedY;
@@ -283,186 +284,170 @@
                         }
                     }
 
+                    UI.switchDisplayMode();
+                },
+
+                switchDisplayMode : (mode = UI.darkMode) => {
+                    UI.darkMode = mode;
+
                     if(UI.darkMode) {
-                        UI.switchDisplayMode();
+                        // anchors
+                        let anchorElements = document.getElementsByTagName('a');
+                        for(let i = 0; i < anchorElements.length; ++i) {
+                            anchorElements[i].style.color = "#448AFF";
+                        }
+
+                        // body
+                        let bodyElement = document.getElementsByTagName('body');
+                        bodyElement[0].style.backgroundColor = "#303030";
+                        bodyElement[0].style.color = "#ffffff";
+
+                        // buttons
+                        let buttonElements = document.getElementsByTagName('button');
+                        for(let i = 0; i < buttonElements.length; ++i) {
+                            if(buttonElements[i].disabled) {
+                                buttonElements[i].style.backgroundColor = "#a5a5a5";
+                                buttonElements[i].style.borderColor = "#636363";
+                                buttonElements[i].style.color = "#636363";
+                            } else {
+                                buttonElements[i].style.backgroundColor = "#424242";
+                                buttonElements[i].style.borderColor = "#448AFF";
+                                buttonElements[i].style.color = "#448AFF";
+                            }
+                        }
+
+                        // section
+                        let sections = document.getElementsByClassName('section');
+                        for(let i = 0; i < sections.length; ++i) {
+                            if(sections[i].id != "debug") {
+                                sections[i].style.backgroundColor = "#424242";
+                                sections[i].style.color = "#ffffff";
+                            }
+                        }
+
+                        // blue bar
+                        let bluebar = document.getElementById("blue-bar");
+                        bluebar.style.color = "#448AFF";
+
+                        // shape size input
+                        let shapeSizeInput = document.getElementById('shape-width-text');
+                        shapeSizeInput.style.border = "none";
+
+                        // toolbar
+                        let toolbar = document.getElementById("toolbar");
+                        toolbar.style.backgroundColor = "#212121";
+                        toolbar.style.color = "#448AFF";
+
+                        // dark / light mode buttons
+                        let darkModeButton = document.getElementById("dark-mode-button-dark");
+                        let lightModeButton = document.getElementById("dark-mode-button-light");
+
+                        darkModeButton.disabled = true;
+                        lightModeButton.disabled = false;
+
+                        // button group buttons
+                        let buttonGroupButtonElements = document.getElementsByClassName('button-group-button');
+                        for(let i = 0; i < buttonGroupButtonElements.length; ++i) {
+                            buttonGroupButtonElements[i].style.backgroundColor = "inherit";
+
+                            if(buttonGroupButtonElements[i].disabled) {
+                                buttonGroupButtonElements[i].style.color = "#636363";
+                            } else {
+                                buttonGroupButtonElements[i].style.color = "#448AFF";
+                            }
+                        }
+
+                        // button group
+                        let buttonGroup = document.getElementsByClassName('button-group');
+                        for(let i = 0; i < buttonGroup.length; ++i) {
+                            buttonGroup[i].style.borderColor = "#448AFF";
+                        }
                     } else {
-                        UI.lightMode();
-                    }
-                },
-
-                lightMode : () => {
-                    UI.darkMode = false;
-
-                    // anchors
-                    let anchorElements = document.getElementsByTagName('a');
-                    for(let i = 0; i < anchorElements.length; ++i) {
-                        anchorElements[i].style.color = "#000000";
-                    }
-
-                    // body
-                    let bodyElement = document.getElementsByTagName('body');
-                    bodyElement[0].style.backgroundColor = "#dedede";
-                    bodyElement[0].style.color = "#000000";
-
-                    // buttons
-                    let buttonElements = document.getElementsByTagName('button');
-                    for(let i = 0; i < buttonElements.length; ++i) {
-                        if(buttonElements[i].disabled) {
-                            buttonElements[i].style.backgroundColor = "#448AFF";
-                            buttonElements[i].style.borderColor = "#000000";
-                            buttonElements[i].style.color = "#000000";
-                        } else {
-                            buttonElements[i].style.backgroundColor = "#ffffff";
-                            buttonElements[i].style.borderColor = "#448AFF";
-                            buttonElements[i].style.color = "#000000";
+                        // anchors
+                        let anchorElements = document.getElementsByTagName('a');
+                        for(let i = 0; i < anchorElements.length; ++i) {
+                            anchorElements[i].style.color = "#000000";
                         }
-                    }
 
-                    // shape size input
-                    let shapeSizeInput = document.getElementById('shape-width-text');
-                    shapeSizeInput.style.borderWidth = "1px";
-                    shapeSizeInput.style.borderColor = "#448AFF";
-                    shapeSizeInput.style.borderStyle = "solid";
-                    
-                    // section
-                    let sections = document.getElementsByClassName('section');
-                    for(let i = 0; i < sections.length; ++i) {
-                        if(sections[i].id != "debug") {
-                            sections[i].style.backgroundColor = "#ffffff";
-                            sections[i].style.color = "#000000";
+                        // body
+                        let bodyElement = document.getElementsByTagName('body');
+                        bodyElement[0].style.backgroundColor = "#dedede";
+                        bodyElement[0].style.color = "#000000";
+
+                        // buttons
+                        let buttonElements = document.getElementsByTagName('button');
+                        for(let i = 0; i < buttonElements.length; ++i) {
+                            if(buttonElements[i].disabled) {
+                                buttonElements[i].style.backgroundColor = "#448AFF";
+                                buttonElements[i].style.borderColor = "#000000";
+                                buttonElements[i].style.color = "#000000";
+                            } else {
+                                buttonElements[i].style.backgroundColor = "#ffffff";
+                                buttonElements[i].style.borderColor = "#448AFF";
+                                buttonElements[i].style.color = "#000000";
+                            }
                         }
-                    }
 
-                    // blue bar
-                    let bluebar = document.getElementById("blue-bar");
-                    bluebar.style.color = "#000000";
-
-                    // toolbar
-                    let toolbar = document.getElementById("toolbar");
-                    toolbar.style.backgroundColor = "#bdbdbd";
-                    toolbar.style.color = "#000000";
-
-                    // dark / light mode buttons
-                    let darkModeButton = document.getElementById("dark-mode-button-dark");
-                    let lightModeButton = document.getElementById("dark-mode-button-light");
-
-                    darkModeButton.disabled = false;
-                    lightModeButton.disabled = true;
-
-                    // button group buttons
-                    let buttonGroupButtonElements = document.getElementsByClassName('button-group-button');
-                    for(let i = 0; i < buttonGroupButtonElements.length; ++i) {
-                        buttonGroupButtonElements[i].style.backgroundColor = "inherit";
-
-                        if(buttonGroupButtonElements[i].disabled) {
-                            buttonGroupButtonElements[i].style.color = "#636363";
-                        } else {
-                            buttonGroupButtonElements[i].style.color = "#000000";
+                        // shape size input
+                        let shapeSizeInput = document.getElementById('shape-width-text');
+                        shapeSizeInput.style.borderWidth = "1px";
+                        shapeSizeInput.style.borderColor = "#448AFF";
+                        shapeSizeInput.style.borderStyle = "solid";
+                        
+                        // section
+                        let sections = document.getElementsByClassName('section');
+                        for(let i = 0; i < sections.length; ++i) {
+                            if(sections[i].id != "debug") {
+                                sections[i].style.backgroundColor = "#ffffff";
+                                sections[i].style.color = "#000000";
+                            }
                         }
-                    }
 
-                    // button group
-                    let buttonGroup = document.getElementsByClassName('button-group');
-                    for(let i = 0; i < buttonGroup.length; ++i) {
-                        buttonGroup[i].style.borderColor = "#000000";
-                    }
-                },
+                        // blue bar
+                        let bluebar = document.getElementById("blue-bar");
+                        bluebar.style.color = "#000000";
 
-                switchDisplayMode : () => {
-                    UI.darkMode = true;
+                        // toolbar
+                        let toolbar = document.getElementById("toolbar");
+                        toolbar.style.backgroundColor = "#bdbdbd";
+                        toolbar.style.color = "#000000";
 
-                    // anchors
-                    let anchorElements = document.getElementsByTagName('a');
-                    for(let i = 0; i < anchorElements.length; ++i) {
-                        anchorElements[i].style.color = "#448AFF";
-                    }
+                        // dark / light mode buttons
+                        let darkModeButton = document.getElementById("dark-mode-button-dark");
+                        let lightModeButton = document.getElementById("dark-mode-button-light");
 
-                    // body
-                    let bodyElement = document.getElementsByTagName('body');
-                    bodyElement[0].style.backgroundColor = "#303030";
-                    bodyElement[0].style.color = "#ffffff";
+                        darkModeButton.disabled = false;
+                        lightModeButton.disabled = true;
 
-                    // buttons
-                    let buttonElements = document.getElementsByTagName('button');
-                    for(let i = 0; i < buttonElements.length; ++i) {
-                        if(buttonElements[i].disabled) {
-                            buttonElements[i].style.backgroundColor = "#a5a5a5";
-                            buttonElements[i].style.borderColor = "#636363";
-                            buttonElements[i].style.color = "#636363";
-                        } else {
-                            buttonElements[i].style.backgroundColor = "#424242";
-                            buttonElements[i].style.borderColor = "#448AFF";
-                            buttonElements[i].style.color = "#448AFF";
+                        // button group buttons
+                        let buttonGroupButtonElements = document.getElementsByClassName('button-group-button');
+                        for(let i = 0; i < buttonGroupButtonElements.length; ++i) {
+                            buttonGroupButtonElements[i].style.backgroundColor = "inherit";
+
+                            if(buttonGroupButtonElements[i].disabled) {
+                                buttonGroupButtonElements[i].style.color = "#636363";
+                            } else {
+                                buttonGroupButtonElements[i].style.color = "#000000";
+                            }
                         }
-                    }
-                    
-                    // section
-                    let sections = document.getElementsByClassName('section');
-                    for(let i = 0; i < sections.length; ++i) {
-                        if(sections[i].id != "debug") {
-                            sections[i].style.backgroundColor = "#424242";
-                            sections[i].style.color = "#ffffff";
+
+                        // button group
+                        let buttonGroup = document.getElementsByClassName('button-group');
+                        for(let i = 0; i < buttonGroup.length; ++i) {
+                            buttonGroup[i].style.borderColor = "#000000";
                         }
-                    }
-
-                    // blue bar
-                    let bluebar = document.getElementById("blue-bar");
-                    bluebar.style.color = "#448AFF";
-
-                    // shape size input
-                    let shapeSizeInput = document.getElementById('shape-width-text');
-                    shapeSizeInput.style.border = "none";
-
-                    // toolbar
-                    let toolbar = document.getElementById("toolbar");
-                    toolbar.style.backgroundColor = "#212121";
-                    toolbar.style.color = "#448AFF";
-
-                    // dark / light mode buttons
-                    let darkModeButton = document.getElementById("dark-mode-button-dark");
-                    let lightModeButton = document.getElementById("dark-mode-button-light");
-
-                    darkModeButton.disabled = true;
-                    lightModeButton.disabled = false;
-
-                    // button group buttons
-                    let buttonGroupButtonElements = document.getElementsByClassName('button-group-button');
-                    for(let i = 0; i < buttonGroupButtonElements.length; ++i) {
-                        buttonGroupButtonElements[i].style.backgroundColor = "inherit";
-
-                        if(buttonGroupButtonElements[i].disabled) {
-                            buttonGroupButtonElements[i].style.color = "#636363";
-                        } else {
-                            buttonGroupButtonElements[i].style.color = "#448AFF";
-                        }
-                    }
-
-                    // button group
-                    let buttonGroup = document.getElementsByClassName('button-group');
-                    for(let i = 0; i < buttonGroup.length; ++i) {
-                        buttonGroup[i].style.borderColor = "#448AFF";
                     }
                 },
             }
 
             setCurrentShape = (shape) => {
                 currentShape = shape;
-
-                if(UI.darkMode)  {
-                    UI.switchDisplayMode();
-                } else {
-                    UI.lightMode();
-                }
+                UI.switchDisplayMode();
             }
 
             setCurrentTool = (tool) => {
                 currentTool = tool;
-
-                if(UI.darkMode)  {
-                    UI.switchDisplayMode();
-                } else {
-                    UI.lightMode();
-                }
+                UI.switchDisplayMode();
             }
 
             setCurrentFill = () => {
@@ -515,8 +500,8 @@
             <a onclick="Canvas.undo();">Undo</a>
             <a onclick="redo();">Redo</a>
             <span class="button-group">
-                <button class="button-group-button" id="dark-mode-button-dark" onclick="UI.switchDisplayMode();">☽</a>
-                <button disabled class="button-group-button"id="dark-mode-button-light" onclick="UI.lightMode();">☼</a>
+                <button class="button-group-button" id="dark-mode-button-dark" onclick="UI.switchDisplayMode(true);">☽</a>
+                <button disabled class="button-group-button"id="dark-mode-button-light" onclick="UI.switchDisplayMode(false);">☼</a>
             </span>
         </div>
         <div id="left-side">

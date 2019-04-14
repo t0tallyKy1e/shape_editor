@@ -365,7 +365,7 @@ class Line extends Shape {
     }
 }
 
-// i want to rewrite the below as n-gons where the number of sides is a new parameter... this will make polygons easier to work with
+// i want to rewrite the below as n-gons where the number of sides is a new parameter... this will make polygons easier to work with later
 class Rectangle extends Shape {
     constructor(originX = 0, originY = 0, width = 1, height = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
         super(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor);
