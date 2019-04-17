@@ -14,11 +14,11 @@
             keysPressed = new Array();
 
             currentFill = '#000000';
-            currentShape = 'tria';
+            currentShape = 'circ';
             currentHeight = 10;
             currentWidth = 10;
             currentStroke = '#000000';
-            currentTool = 'rota';
+            currentTool = 'tran';
 
             selectMode = false;
 
@@ -101,18 +101,25 @@
                     currentFill = tempFill;
                 },
 
-                undo : () => {
+                keyboardUndo : () => {
                     if (keysPressed[Key.ctrl] && keysPressed[Key.z]) {
-                        Canvas.drawnShapes.pop();
-                        Canvas.clear();
-                        Canvas.drawPrevious();
+                        Canvas.undo();
                     }
-                }
+                },
+
+                redo : () => {
+
+                },
+
+                undo : () => {
+                    Canvas.drawnShapes.pop();
+                    Canvas.clear();
+                    Canvas.drawPrevious();
+                },
             }
 
             var File = {
                 // logic for saving found here: https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file#answer-34156339
-                // logic for loading found here: 
 
                 exportAsPNG : () => {
                     let canvasData = canvas.toDataURL();
@@ -123,7 +130,15 @@
                 },
 
                 load : () => {
-                    // console.log(JSON.parse(jsonShapeData)); // load
+                    let file = document.createElement("input");
+                    file.type = "file";
+                    file.accept = "application/json";
+                    file.onchange = () => {
+                        // Canvas.drawnShapes = JSON.parse(fileData)// file that was read
+                        // Canvas.drawPrevious();
+                    }
+
+                    file.click();
                 },
 
                 save : () => {
@@ -252,13 +267,17 @@
                 },
 
                 released : (event) => {
-                    Mouse.releasedX = event.pageX - pageMarginX;
-                    Mouse.releasedY = event.pageY - pageMarginY;
+                    Mouse.overCanvas = event.pageX - pageMarginX >= 0 && event.pageX - pageMarginX <= Canvas.size && event.pageY - pageMarginY >= 0 && event.pageY - pageMarginY <= Canvas.size;
 
-                    Mouse.isPressed = false;
+                    if(Mouse.overCanvas) {
+                        Mouse.releasedX = event.pageX - pageMarginX;
+                        Mouse.releasedY = event.pageY - pageMarginY;
 
-                    if(!!tempShape) {
-                        tempShape.save();
+                        Mouse.isPressed = false;
+
+                        if(!!tempShape) {
+                            tempShape.save();
+                        }
                     }
                     
                     document.getElementById('mouse_released_x').innerHTML = Mouse.releasedX;
@@ -376,6 +395,14 @@
                         for(let i = 0; i < buttonGroup.length; ++i) {
                             buttonGroup[i].style.borderColor = "#448AFF";
                         }
+                        
+                        // slider inputs
+                        let sliderInputs = document.getElementsByTagName("input");
+                        for(let i = 0; i < sliderInputs.length; ++i) {
+                            if(sliderInputs[i].type == "range") {
+                                sliderInputs[i].style.backgroundColor = "#424242";
+                            }
+                        }
                     } else {
                         // anchors
                         let anchorElements = document.getElementsByTagName('a');
@@ -454,6 +481,14 @@
                         for(let i = 0; i < buttonGroup.length; ++i) {
                             buttonGroup[i].style.borderColor = "#000000";
                         }
+                        
+                        // slider inputs
+                        let sliderInputs = document.getElementsByTagName("input");
+                        for(let i = 0; i < sliderInputs.length; ++i) {
+                            if(sliderInputs[i].type == "range") {
+                                sliderInputs[i].style.backgroundColor = "#ffffff";
+                            }
+                        }
                     }
                 },
             }
@@ -524,14 +559,14 @@
             }
         </script>
     </head>
-    <body onload="Canvas.draw(); UI.disableCurrentButton();" onmousedown="Mouse.pressed(event)" onmouseup="Mouse.released(event)" onmousemove="Mouse.move(event)" onkeydown="Key.checkMultipleKeyPresses(event); Canvas.undo()" onkeyup="Key.checkMultipleKeyPresses(event);">
+    <body onload="Canvas.draw(); UI.disableCurrentButton();" onmousedown="Mouse.pressed(event)" onmouseup="Mouse.released(event)" onmousemove="Mouse.move(event)" onkeydown="Key.checkMultipleKeyPresses(event); Canvas.keyboardUndo()" onkeyup="Key.checkMultipleKeyPresses(event);">
         <div id="toolbar">
             <a onclick="File.save();">Save</a>
-            <a onclick="File.load();" >Load</a>
+            <a onclick="File.load();">Load</a>
             <a onclick="File.exportAsPNG();">Export as PNG</a>
             <span id="blue-bar">|</span>
-            <a onclick="Canvas.undo();">Undo</a>
-            <a onclick="redo();">Redo</a>
+            <a onclick="Canvas.undo()">Undo</a>
+            <a onclick="Canvas.redo();">Redo</a>
             <span class="button-group">
                 <button class="button-group-button" id="dark-mode-button-dark" onclick="UI.switchDisplayMode(true);">☽</a>
                 <button disabled class="button-group-button"id="dark-mode-button-light" onclick="UI.switchDisplayMode(false);">☼</a>
@@ -545,10 +580,10 @@
             </div>
 
             <div id='debug' class="section">
-                <h2>debug console</h2>
                 <table>
                     <tbody>
-                        <tr><td><h3>mouse pressed = <span id='status'></span></h3></td><td><h3>mouse move</h3></td><td><h3>mouse released</h3></td><td><h3>rotation = <span id='rotation'></span></h3></td></tr>
+                        <tr><td><h3>rotation = <span id='rotation'></span></h3></td></tr>
+                        <tr><td><h3>mouse pressed = <span id='status'></span></h3></td><td><h3>mouse move</h3></td><td><h3>mouse released</h3></td></tr>
                         <tr><td><span>x: </span><span id='mouse_pressed_x'></span></td><td><span>x: </span><span id='mouse_move_x'></span></td><td><span>x: </span><span id='mouse_released_x'></span></td></tr>
                         <tr><td><span>y: </span><span id='mouse_pressed_y'></span></td><td><span>y: </span><span id='mouse_move_y'></span></td><td><span>y: </span><span id='mouse_released_y'></span></td></tr>
                     </tbody>
@@ -577,8 +612,8 @@
                 <button onclick="setCurrentShape(this.value); UI.disableCurrentButton();" type="button" value="tria">Triangle</button>
             </div>
 
-            <div class="section" id="tools-shape-parameters">
-                <table> <!-- GET RID OF THE TABLE LAYOUT-->
+            <div id="tools-shape-parameters" class="section">
+                <table>
                     <tr>
                         <td>
                             <h2>shape size</h2>

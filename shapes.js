@@ -62,11 +62,11 @@ class Shape {
         this._shapeType = 'shap';
     }
 
-    checkCollision = (mouseX, mouseY) => {
-        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
+    checkCollision (mouseX, mouseY) {
+        return mouseX >= this.originX && mouseX <= this.originX + this.width && mouseY >= this.originY && mouseY <= this.originY + this.height;
     }
 
-    draw = () => {
+    draw () {
         switch(currentTool) {
             case 'rota':
                 let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
@@ -117,7 +117,7 @@ class Shape {
         }
     }
 
-    load = (shape) => {
+    load (shape) {
         let jsonShape = JSON.parse(shape);
         this.originX = jsonShape.originX;
         this.originY = jsonShape.originY;
@@ -129,7 +129,7 @@ class Shape {
         this.fillColor = jsonShape.fillColor;
     }
 
-    save = () => {
+    save () {
         if(!!Canvas.drawnShapes[0]) { // simplify null, undefined and false to false
             Canvas.drawnShapes.push([this._shapeType, currentTool, this.toString()]);
         } else {
@@ -137,7 +137,7 @@ class Shape {
         }
     }
 
-    toJSON = () => {
+    toJSON () {
         return {
             originX: this.originX,
             originY: this.originY,
@@ -150,7 +150,7 @@ class Shape {
         }
     }
 
-    toString = () => {
+    toString () {
         let jsonRep = this.toJSON();
         return JSON.stringify(jsonRep);
     }
@@ -163,11 +163,11 @@ class Ellipse extends Shape {
         this._rotation = 0;
     }
 
-    checkCollision = (mouseX, mouseY) => {
+    checkCollision (mouseX, mouseY) {
         return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
-    draw = () => {
+    draw () {
         switch(currentTool) {
             case 'rota':
                 let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
@@ -226,7 +226,7 @@ class Circle extends Ellipse {
         this._rotation = 0;
     }
 
-    draw = () => {
+    draw () {
         switch(currentTool) {
             case 'rota':
                 let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
@@ -291,11 +291,11 @@ class Line extends Shape {
         ];
     }
 
-    checkCollision = (mouseX, mouseY) => {
+    checkCollision (mouseX, mouseY) {
         return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
-    draw = () => {
+    draw () {
         this.savePoints();
 
         switch(currentTool) {
@@ -356,7 +356,7 @@ class Line extends Shape {
         }
     }
 
-    savePoints = () => {
+    savePoints () {
         this._points = [
             [this.originX, this.originY], // (originX, originY)
             [this.width, this.height]  // (endX, endY)
@@ -377,11 +377,11 @@ class Rectangle extends Shape {
         ];
     }
 
-    checkCollision = (mouseX, mouseY) => {
+    checkCollision (mouseX, mouseY) {
         return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
-    draw = () => {
+    draw () {
         switch(currentTool) {
             case 'rota':
                 // might use this later to rotate around center of line
@@ -460,7 +460,7 @@ class Rectangle extends Shape {
         }
     }
 
-    recalculatePoints = () => {
+    recalculatePoints () {
         this._points = [
             [this.originX, this.originY], // top left
             [this.originX + this.width, this.originY], // top right
@@ -483,11 +483,11 @@ class Triangle extends Shape {
         this._shapeType = 'tria';
     }
 
-    checkCollision = (mouseX, mouseY) => {
+    checkCollision (mouseX, mouseY) {
         return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
     }
 
-    draw = () => {
+    draw () {
         switch(currentTool) {
             case 'rota':
                 let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
@@ -558,7 +558,7 @@ class Triangle extends Shape {
         }
     }
 
-    calculatePoints = () => {
+    calculatePoints () {
         this._points = [
             [this.originX, this.originY], // top left
             [this.originX + this.width, this.originY + this.height], // bottom right

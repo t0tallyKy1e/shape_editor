@@ -2,6 +2,7 @@ a {
     color:  #448AFF;
     margin: 10px;
     padding: 8px;
+    -webkit-user-select: none;
 }
 
 a:hover {
@@ -75,6 +76,7 @@ input[type='range'] {
     margin: 0;
     padding: 0px;
     -webkit-appearance: none;
+    width: 65%;
 }
 
 input[type=range]::-webkit-slider-runnable-track {
@@ -108,6 +110,28 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 input[type='range']:focus::-webkit-slider-thumb {
     border: 0;
 }
+
+/* Firefox Support */
+input[type=range]::-moz-range-track {
+    background-color: #005ecb;
+    border: 1px solid #005ecb;
+    border-radius: 5px;
+    height: 5px;
+    text-align: center;
+    width: 100%;
+    -webkit-appearance: none;
+}
+
+input[type='range']::-moz-range-thumb {
+    border: 1px solid #448AFF;
+    border-radius: 8px;
+    background-color: #448AFF;
+    height: 15px;
+    margin-top: -6px;
+    width: 15px;
+    -webkit-appearance: none;
+}
+/* End Firefox Support */
 
 td {
     padding: 10px;
@@ -146,9 +170,6 @@ td {
 .button-group-button {
     background-color: inherit;
 }
-
-
-
 
 .rgb-range {
     text-align: right;
