@@ -14,7 +14,7 @@
             keysPressed = new Array();
 
             currentFill = '#000000';
-            currentShape = 'circ';
+            currentShape = 'curv';
             currentHeight = 10;
             currentWidth = 10;
             currentStroke = '#000000';
@@ -60,6 +60,9 @@
                                 tempCirc.draw();
                                 break;
                             case "curv":
+                                let tempCurv = new Curve();
+                                tempCurv.load(shape[2]);
+                                tempCurv.draw();
                                 break;
                             case "elli":
                                 let tempElli = new Ellipse();
@@ -210,6 +213,27 @@
 
                         Mouse.isPressed = true;
 
+                        let foundShape = false
+
+
+                        // let tempCirc = new Circle();
+                        // tempCirc.load(shape[2]);
+
+                        if(selectMode) {
+                            for(let i = Canvas.drawnShapes.length - 1; i >= 0 && !foundShape; i--) {
+                                let temp = new Line();
+                                temp.load(Canvas.drawnShapes[i][2]);
+                                temp.loadIntoContext();
+
+                                // need to load shape into context with no stroke
+                                if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
+                                    console.log("index [" + i + "]: " + Canvas.drawnShapes[i]);
+                                    foundShape = true;
+                                }
+                            }
+                        }
+
+
                         document.getElementById('mouse_pressed_x').innerHTML = Mouse.pressedX;
                         document.getElementById('mouse_pressed_y').innerHTML = Mouse.pressedY;
                         document.getElementById('status').innerHTML = Mouse.isPressed;
@@ -230,6 +254,8 @@
                                 tempShape.draw();
                                 break;
                             case "curv":
+                                tempShape = new Curve(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape.draw();
                                 break;
                             case "elli":
                                 tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, currentHeight / 2, Mouse.moveX, Mouse.moveY, currentStroke);
@@ -275,7 +301,7 @@
 
                         Mouse.isPressed = false;
 
-                        if(!!tempShape) {
+                        if(!!tempShape && !selectMode) {
                             tempShape.save();
                         }
                     }

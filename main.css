@@ -3,6 +3,7 @@ a {
     margin: 10px;
     padding: 8px;
     -webkit-user-select: none;
+    text-decoration: none;
 }
 
 a:hover {

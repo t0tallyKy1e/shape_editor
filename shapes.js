@@ -129,6 +129,14 @@ class Shape {
         this.fillColor = jsonShape.fillColor;
     }
 
+    loadIntoContext () {
+        context.beginPath();
+        context.moveTo(this.originX, this.originY);
+        context.lineTo(this.originX + this.width, this.originY);
+        context.lineTo(this.originX + this.width, this.originY + this.height);
+        context.lineTo(this.originX, this.originY + this.height);
+    }
+
     save () {
         if(!!Canvas.drawnShapes[0]) { // simplify null, undefined and false to false
             Canvas.drawnShapes.push([this._shapeType, currentTool, this.toString()]);
@@ -359,6 +367,82 @@ class Line extends Shape {
     savePoints () {
         this._points = [
             [this.originX, this.originY], // (originX, originY)
+            [this.width, this.height]  // (endX, endY)
+        ];
+    }
+}
+
+class Curve extends Shape {
+    constructor(originX, originY, width, height, mouseX, mouseY, strokeColor) {
+        super(originX, originY, width, height, mouseX, mouseY, strokeColor);
+        this._shapeType = 'curv';
+
+        this._points = [
+            [], // origin
+            [], // control point 1
+            [], // control point 2
+            []  // end
+        ];
+    }
+
+    draw () {
+        this.savePoints();
+
+        switch(currentTool) {
+            case 'rota':
+
+                break;
+            case 'scal':
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                // initial logic for drawing a sine wave found here: https://stackoverflow.com/questions/29917446/drawing-sine-wave-in-canvas#answer-53239508
+
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
+
+                let controlPoint01X = this.width * 2/5;
+                let controlPoint01Y = -1 * (this.height - (this.height * 2/5));
+                let controlPoint02X = this.width - (this.width * 2/5);
+                let controlPoint02Y = this.height - (this.height * 2/5);
+                
+                let translateOrigin = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+                let translateControlPoint01 = Transform.translate(this.originX + controlPoint01X, this.originY + controlPoint01Y, xDistance, yDistance);
+                let translateControlPoint02 = Transform.translate(this.originX + controlPoint02X, this.originY + controlPoint02Y, xDistance, yDistance);
+                let translateEnd = Transform.translate(this.originX + this.width, this.originY, xDistance, yDistance);
+                
+                [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
+                [this._points[1][0], this._points[1][1]] = [translateControlPoint01[0][0], translateControlPoint01[1][0]];
+                [this._points[2][0], this._points[2][1]] = [translateControlPoint02[0][0], translateControlPoint02[1][0]];
+                [this._points[3][0], this._points[3][1]] = [translateEnd[0][0], translateEnd[1][0]];
+                
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
+
+        // draw line
+        context.beginPath();
+        context.moveTo(this._points[0][0], this._points[0][1]);
+        context.bezierCurveTo(this._points[1][0], this._points[1][1], this._points[2][0], this._points[2][1], this._points[3][0], this._points[3][1]);
+
+        // change stroke color
+        context.strokeStyle = this.strokeColor;
+        context.stroke();
+
+        if(DEBUG == true) {
+            console.log("curve(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this._calculatedHeight + ")");
+        }
+    }
+
+    savePoints () {
+        this._points = [
+            [this.originX, this.originY], // (originX, originY)
+            [0, 0],
+            [0, 0],
             [this.width, this.height]  // (endX, endY)
         ];
     }
