@@ -288,40 +288,36 @@
                         switch(currentShape) {
                             case "circ":
                                 tempShape = new Circle(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
-                                tempShape.draw();
                                 break;
                             case "curv":
                                 tempShape = new Curve(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw();
                                 break;
                             case "elli":
                                 tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, currentHeight / 2, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw();
                                 break;
                             case "line":
                                 tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentWidth, Mouse.pressedY + currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw();
                                 break;
                             case "pgon":
                                 break;
                             case "plin":
+                                tempShape = new Polygon(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
                                 break;
                             case "rect":
                                 tempShape = new Rectangle(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
-                                tempShape.draw();
                                 break;
                             case "squa":
                                 tempShape = new Square(Mouse.pressedX, Mouse.pressedY, currentWidth, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
-                                tempShape.draw();
                                 break;
                             case "tria":
                                 tempShape = new Triangle(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
-                                tempShape.draw();
                                 break;
                             default:
                                 console.log("Error: no shape selected.");
                                 break;
                         }
+
+                        tempShape.draw();
                     }
 
                     document.getElementById('mouse_move_x').innerHTML = Mouse.moveX;

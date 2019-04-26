@@ -240,28 +240,28 @@ class Circle extends Ellipse {
                 let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);	
                 document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";	
 
-                 this._rotation = rota;	
+                this._rotation = rota;	
 
-                 break;	
-            case 'scal':	
+                break;	
+            case 'scal':
                 let tempEnd = Math.abs(this.mouseX - this.originX) > Math.abs(this.mouseY - this.originY) ? Math.abs(this.mouseX - this.originX) : Math.abs(this.mouseY - this.originY);	
 
-                 this.width = tempEnd;	
-                this.height = tempEnd;	
+                this.width = tempEnd;
+                this.height = tempEnd;
 
-                 break;	
+                break;	
             case 'sele':	
                 break;	
             case 'tran':	
                 let xDistance = this.mouseX - this.originX;	
                 let yDistance = this.mouseY - this.originY;	
 
-                 let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);	
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);	
 
-                 this.originX = tran[0][0];	
+                this.originX = tran[0][0];	
                 this.originY = tran[1][0];	
 
-                 break;	
+                break;	
             default:	
                 // hits this when drawing previously drawn shape	
                 break;	
@@ -558,6 +558,102 @@ class Square extends Rectangle {
     constructor(originX = 0, originY = 0, size = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
         super(originX, originY, size, size, mouseX, mouseY, strokeColor, fillColor);
         this._shapeType = 'squa';
+        this._points = [
+            [this.originX, this.originY], // top left
+            [this.originX + this.width, this.originY], // top right
+            [this.originX + this.width, this.originY + this.height], // bottom right
+            [this.originX, this.originY + this.height], // bottom left
+        ];
+    }
+
+    checkCollision (mouseX, mouseY) {
+        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
+    }
+
+    draw () {
+        switch(currentTool) {
+            case 'rota':
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+                // top right
+                let rotateTopRightAroundOrigin = Transform.rotate(this.width, 0, rota);
+                let translateBackTopRight = Transform.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
+
+                this._points[1][0] = translateBackTopRight[0][0];
+                this._points[1][1] = translateBackTopRight[1][0];
+
+                // bottom right
+                let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
+                let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
+
+                this._points[2][0] = translateBackBottomRight[0][0];
+                this._points[2][1] = translateBackBottomRight[1][0];
+
+                // bottom left
+                let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
+                let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
+
+                this._points[3][0] = translateBackBottomLeft[0][0];
+                this._points[3][1] = translateBackBottomLeft[1][0];
+
+                break;
+            case 'scal':
+                let tempEnd = this.mouseX - this.originX > this.mouseY - this.originY ? this.mouseX - this.originX : this.mouseY - this.originY;
+
+                this.width = tempEnd;
+                this.height = tempEnd;
+
+                this.recalculatePoints();
+                
+                break;
+            case 'sele':
+                break;
+            case 'tran':
+                let xDistance = this.mouseX - this.originX;
+                let yDistance = this.mouseY - this.originY;
+
+                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+                
+                this.originX = tran[0][0];
+                this.originY = tran[1][0];
+
+                this.recalculatePoints();
+                
+                break;
+            default:
+                this.recalculatePoints();
+                break;
+        }
+
+        // draw rectangle
+        context.beginPath();
+        context.moveTo(this.originX, this.originY);                 // top left
+        context.lineTo(this._points[1][0], this._points[1][1]);     // top right
+        context.lineTo(this._points[2][0], this._points[2][1]);     // bottom right
+        context.lineTo(this._points[3][0], this._points[3][1]);     // bottom left
+        context.closePath();
+    
+        // change fill color
+        context.fillStyle = this.fillColor;
+        context.fill();
+    
+        // change stroke color
+        context.strokeStyle = this.strokeColor;
+        context.stroke();
+    
+        if(DEBUG == true) {
+            console.log("rect(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
+        }
+    }
+
+    recalculatePoints () {
+        this._points = [
+            [this.originX, this.originY], // top left
+            [this.originX + this.width, this.originY], // top right
+            [this.originX + this.width, this.originY + this.height], // bottom right
+            [this.originX, this.originY + this.height], // bottom left
+        ];
     }
 }
 
