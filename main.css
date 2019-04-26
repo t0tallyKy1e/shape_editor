@@ -6,6 +6,10 @@ a {
     text-decoration: none;
 }
 
+a:active {
+    background-color: #424242;
+}
+
 a:hover {
     cursor: pointer;
     border-bottom: 2px solid #448AFF;
@@ -207,6 +211,18 @@ td {
 #left-side {
     left: 10px;
     position: absolute;
+}
+
+#select-mode-disabled {
+    background-color: #a5a5a5;
+    border: 1px solid #636363;
+    color: #636363;
+}
+
+#select-mode-enabled {
+    background-color: #424242;
+    color: #448AFF;
+    border: 1px solid #448AFF;
 }
 
 #toolbar {

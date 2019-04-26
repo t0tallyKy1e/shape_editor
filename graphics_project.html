@@ -133,15 +133,25 @@
                 },
 
                 load : () => {
-                    let file = document.createElement("input");
-                    file.type = "file";
-                    file.accept = "application/json";
-                    file.onchange = () => {
-                        // Canvas.drawnShapes = JSON.parse(fileData)// file that was read
-                        // Canvas.drawPrevious();
+                    let fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "application/json";
+                    fileInput.onchange = () => {
+                        let fileReader = new FileReader();
+                        let file = fileInput.files[0];
+
+                        fileReader.onload = () => {
+                            let loadedText = fileReader.result;
+                            let loadedJSON = JSON.parse(loadedText);
+                            Canvas.clear();
+                            Canvas.drawnShapes = loadedJSON;
+                            Canvas.drawPrevious();
+                        }
+
+                        fileReader.readAsText(file);
                     }
 
-                    file.click();
+                    fileInput.click();
                 },
 
                 save : () => {
