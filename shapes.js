@@ -233,6 +233,56 @@ class Circle extends Ellipse {
         this._shapeType = 'circ';
         this._rotation = 0;
     }
+
+    draw () {	
+        switch(currentTool) {	
+            case 'rota':	
+                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);	
+                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";	
+
+                 this._rotation = rota;	
+
+                 break;	
+            case 'scal':	
+                let tempEnd = Math.abs(this.mouseX - this.originX) > Math.abs(this.mouseY - this.originY) ? Math.abs(this.mouseX - this.originX) : Math.abs(this.mouseY - this.originY);	
+
+                 this.width = tempEnd;	
+                this.height = tempEnd;	
+
+                 break;	
+            case 'sele':	
+                break;	
+            case 'tran':	
+                let xDistance = this.mouseX - this.originX;	
+                let yDistance = this.mouseY - this.originY;	
+
+                 let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);	
+
+                 this.originX = tran[0][0];	
+                this.originY = tran[1][0];	
+
+                 break;	
+            default:	
+                // hits this when drawing previously drawn shape	
+                break;	
+        }	
+
+         // draw circle	
+        context.beginPath();	
+        context.ellipse(this.originX, this.originY, this.width, this.height, this._rotation, 0, 2 * Math.PI);	
+
+         // change fill color	
+        context.fillStyle = this.fillColor;	
+        context.fill();	
+
+         // change stroke color	
+        context.strokeStyle = this.strokeColor;	
+        context.stroke();	
+
+         if(DEBUG == true) {	
+            console.log("circle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");	
+        }	
+    }
 }
 
 class Line extends Shape {

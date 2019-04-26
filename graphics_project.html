@@ -27,9 +27,11 @@
             var Canvas = {
                 drawnShapes : new Array(),
                 size : 600,
+                gridSize : 10,
 
                 clear : () => {
                     context.clearRect(0, 0, canvas.width, canvas.height);
+                    Canvas.drawGrid();
                 },
 
                 draw : () => {
@@ -37,12 +39,37 @@
                     context = canvas.getContext('2d');
 
                     Mouse.isPressed = false;
+                    Canvas.clear();
                     setCurrentShape(currentShape);
                     setCurrentSize(currentWidth, currentHeight);
                     UI.disableCurrentButton();
                     UI.switchDisplayMode();
                     setCurrentFill();
                     setCurrentStroke();
+                },
+
+                drawGrid : () => {
+                    for(let i = 0; i <= Canvas.size; i+=Canvas.gridSize) {
+                        context.beginPath();
+                        context.moveTo(i, 1);
+                        context.lineTo(i, Canvas.size);
+                        context.closePath();
+
+                        context.strokeStyle = "#e0e0ff";
+                        context.lineWidth = 1;
+                        context.stroke();
+                    }
+
+                    for(let i = 0; i <= Canvas.size; i+=Canvas.gridSize) {
+                        context.beginPath();
+                        context.moveTo(1, i);
+                        context.lineTo(Canvas.size, i);
+                        context.closePath();
+
+                        context.strokeStyle = "#e0e0ff";
+                        context.lineWidth = 1;
+                        context.stroke();
+                    }
                 },
 
                 drawPrevious : () => {
