@@ -465,7 +465,6 @@ class Rectangle extends Shape {
     }
 
     loadIntoContext () {
-        this.recalculatePoints();
         this.transform();
 
         context.beginPath();

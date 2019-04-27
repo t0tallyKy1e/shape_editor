@@ -245,63 +245,72 @@
 
                 checkSelect : () => {
                     let foundShape = false;
+                    tempTool = currentTool;
+                    tempFill = currentFill;
+                    tempStroke = currentStroke;
+                    
+                    for(let i = Canvas.drawnShapes.length - 1; i >= 0 && !foundShape; i--) {
+                        let shape = Canvas.drawnShapes[i];
+                        let temp = new Shape();
+                        
+                        currentTool = shape[1];
 
-                    if(selectMode) {
-                        for(let i = Canvas.drawnShapes.length - 1; i >= 0 && !foundShape; i--) {
-                            let shape = Canvas.drawnShapes[i];
-                            let temp = new Shape();
-
-                            switch(shape[0]) {
-                                case "circ":
-                                    temp = new Circle();
-                                    break;
-                                case "curv":
-                                    temp = new Curve();
-                                    break;
-                                case "elli":
-                                    temp = new Ellipse();
-                                    break;
-                                case "line":
-                                    temp = new Line();
-                                    break;
-                                case "pgon":
-                                    break;
-                                case "plin":
-                                    break;
-                                case "rect":
-                                    temp = new Rectangle();
-                                    break;
-                                case "squa":
-                                    temp = new Square();
-                                    break;
-                                case "tria":
-                                    temp = new Triangle();
-                                    break;
-                                default:
-                                    console.log("Error -> Canvas.drawPrevious(): no shape definition for " + shape[0] + ".");
-                                    break;
-                            }
-
-                            temp.load(shape[2]);
-                            temp.loadIntoContext();
-
-                            if(shape[0] == 'line' || shape[0] == 'curv') {
-                                context.lineWidth = 5;
-                                // context.stroke();
-                            }
-
-                            // need to load shape into context with no stroke
-                            if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
-                                console.log("index [" + i + "]: " + shape);
-                                foundShape = true;
-                            } else if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
-                                console.log("index [" + i + "]: " + shape);
-                                foundShape = true;
-                            }
-
-                            context.lineWidth = 1;
+                        switch(shape[0]) {
+                            case "circ":
+                                temp = new Circle();
+                                break;
+                            case "curv":
+                                temp = new Curve();
+                                break;
+                            case "elli":
+                                temp = new Ellipse();
+                                break;
+                            case "line":
+                                temp = new Line();
+                                break;
+                            case "pgon":
+                                break;
+                            case "plin":
+                                break;
+                            case "rect":
+                                temp = new Rectangle();
+                                break;
+                            case "squa":
+                                temp = new Square();
+                                break;
+                            case "tria":
+                                temp = new Triangle();
+                                break;
+                            default:
+                                console.log("Error -> Canvas.drawPrevious(): no shape definition for " + shape[0] + ".");
+                                break;
                         }
+
+                        temp.load(shape[2]);
+                        temp.loadIntoContext();
+                        context.strokeStyle = "cccccc";
+                        context.stroke();
+                        context.strokeStyle = this.strokeColor;
+
+                        if(shape[0] == 'line' || shape[0] == 'curv') {
+                            context.lineWidth = 5;
+                            // context.stroke();
+                        }
+
+                        if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
+                            console.log("index [" + i + "]: " + shape);
+                            foundShape = true;
+                        } else if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
+                            console.log("index [" + i + "]: " + shape);
+                            foundShape = true;
+                        }
+
+                        context.lineWidth = 1;
                     }
+
+                    currentTool = tempTool;
+                    currentStroke = tempStroke;
+                    currentFill = tempFill;
                 },
 
                 pressed : (event) => {
@@ -313,7 +322,9 @@
 
                         Mouse.isPressed = true;
 
-                        Mouse.checkSelect();
+                        if(selectMode) {
+                            Mouse.checkSelect();
+                        }
 
                         document.getElementById('mouse_pressed_x').innerHTML = Mouse.pressedX;
                         document.getElementById('mouse_pressed_y').innerHTML = Mouse.pressedY;
@@ -369,6 +380,8 @@
                                 console.log("Error: no shape selected.");
                                 break;
                         }
+                    } else if(Mouse.isPressed && selectMode) {
+                        
                     }
 
                     document.getElementById('mouse_move_x').innerHTML = Mouse.moveX;
