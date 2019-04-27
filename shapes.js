@@ -504,7 +504,7 @@ class Rectangle extends Shape {
         this._points[3][1] = translateBackBottomLeft[1][0];
     }
 
-    recalculatePoints () {
+    savePoints () {
         this._points = [
             [this.originX, this.originY], // top left
             [this.originX + this.width, this.originY], // top right
@@ -517,7 +517,7 @@ class Rectangle extends Shape {
         this.width = this.mouseX - this.originX;
         this.height = this.mouseY - this.originY;
 
-        this.recalculatePoints();
+        this.savePoints();
     }
 
     translate () {
@@ -529,7 +529,7 @@ class Rectangle extends Shape {
         this.originX = tran[0][0];
         this.originY = tran[1][0];
 
-        this.recalculatePoints();
+        this.savePoints();
     }
 }
 
@@ -557,7 +557,7 @@ class Square extends Rectangle {
         this.width = tempEnd;
         this.height = tempEnd;
 
-        this.recalculatePoints();
+        this.savePoints();
     }
 }
 
@@ -567,7 +567,7 @@ class Triangle extends Shape {
         this._shapeType = 'tria';
     }
 
-    calculatePoints () {
+    savePoints () {
         this._points = [
             [this.originX, this.originY], // top left
             [this.originX + this.width, this.originY + this.height], // bottom right
@@ -582,7 +582,7 @@ class Triangle extends Shape {
     }
 
     loadIntoContext () {
-        this.calculatePoints();
+        this.savePoints();
         this.transform();
 
         context.beginPath();
@@ -596,7 +596,7 @@ class Triangle extends Shape {
         let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
         document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
-        this.calculatePoints();
+        this.savePoints();
 
         // bottom right
         let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
@@ -617,7 +617,7 @@ class Triangle extends Shape {
         this.width = this.mouseX - this.originX;
         this.height = this.mouseY - this.originY;
 
-        this.calculatePoints();
+        this.savePoints();
     }
 
     translate () {
@@ -629,7 +629,7 @@ class Triangle extends Shape {
         this.originX = tran[0][0];
         this.originY = tran[1][0];
 
-        this.calculatePoints();
+        this.savePoints();
     }
 }
 
