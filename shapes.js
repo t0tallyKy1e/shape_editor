@@ -62,59 +62,26 @@ class Shape {
         this._shapeType = 'shap';
     }
 
-    checkCollision (mouseX, mouseY) {
-        return mouseX >= this.originX && mouseX <= this.originX + this.width && mouseY >= this.originY && mouseY <= this.originY + this.height;
+    debug () {
+        if(DEBUG == true) {
+            // write shape to console
+        }
     }
 
-    draw () {
-        switch(currentTool) {
-            case 'rota':
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+    draw (fill = true) {
+        this.loadIntoContext();
 
-                break;
-            case 'scal':
-                this.width = this.mouseX - this.originX;
-                this.height = this.mouseY - this.originY;
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-
-                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                
-                this.originX = tran[0][0];
-                this.originY = tran[1][0];
-                
-                break;
-            default:
-                // hits this when drawing previously drawn shape
-                break;
+        if(fill) {
+            // change fill color
+            context.fillStyle = this.fillColor;
+            context.fill();
         }
-
-        // draw rectangle
-        context.beginPath();
-        context.moveTo(this.originX, this.originY);
-        context.lineTo(this.originX + this.width, this.originY);
-        context.lineTo(this.originX + this.width, this.originY + this.height);
-        context.lineTo(this.originX, this.originY +this.height);
-        context.closePath();
-        //context.rect(this.originX, this.originY, this.width, this.height);
-    
-        // change fill color
-        context.fillStyle = this.fillColor;
-        context.fill();
     
         // change stroke color
         context.strokeStyle = this.strokeColor;
         context.stroke();
-    
-        if(DEBUG == true) {
-            console.log("rect(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
-        }
+
+        this.debug();
     }
 
     load (shape) {
@@ -130,11 +97,16 @@ class Shape {
     }
 
     loadIntoContext () {
-        context.beginPath();
-        context.moveTo(this.originX, this.originY);
-        context.lineTo(this.originX + this.width, this.originY);
-        context.lineTo(this.originX + this.width, this.originY + this.height);
-        context.lineTo(this.originX, this.originY + this.height);
+        // transform shape
+        // load shape into context
+        // no stroke!
+    }
+
+    rotate () {
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        this._rotation = rota;
     }
 
     save () {
@@ -143,6 +115,14 @@ class Shape {
         } else {
             Canvas.drawnShapes[0] = [this._shapeType, currentTool, this.toString()];
         }
+    }
+
+    scale () {
+        let tempEndX = Math.abs(this.mouseX - this.originX);
+        let tempEndY = Math.abs(this.mouseY - this.originY);
+        
+        this.width = tempEndX;
+        this.height = tempEndY;
     }
 
     toJSON () {
@@ -162,6 +142,33 @@ class Shape {
         let jsonRep = this.toJSON();
         return JSON.stringify(jsonRep);
     }
+
+    translate () {
+        let xDistance = this.mouseX - this.originX;
+        let yDistance = this.mouseY - this.originY;
+
+        let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+        
+        this.originX = tran[0][0];
+        this.originY = tran[1][0];
+    }
+
+    transform () {
+        switch(currentTool) {
+            case 'rota':
+                this.rotate();
+                break;
+            case 'scal':
+                this.scale();
+                break;
+            case 'tran':
+                this.translate();
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
+    }
 }
 
 class Ellipse extends Shape {
@@ -171,59 +178,42 @@ class Ellipse extends Shape {
         this._rotation = 0;
     }
 
-    checkCollision (mouseX, mouseY) {
-        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
-    }
-
-    draw () {
-        switch(currentTool) {
-            case 'rota':
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
-
-                this._rotation = rota;
-
-                break;
-            case 'scal':
-                let tempEndX = Math.abs(this.mouseX - this.originX);
-                let tempEndY = Math.abs(this.mouseY - this.originY);
-                
-                this.width = tempEndX;
-                this.height = tempEndY;
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-
-                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                
-                this.originX = tran[0][0];
-                this.originY = tran[1][0];
-                
-                break;
-            default:
-                // hits this when drawing previously drawn shape
-                break;
-        }
-
-        // draw ellipse
-        context.beginPath();
-        context.ellipse(this.originX, this.originY, this.width, this.height, this._rotation, 0, 2 * Math.PI);
-    
-        // change fill color
-        context.fillStyle = this.fillColor;
-        context.fill();
-    
-        // change stroke color
-        context.strokeStyle = this.strokeColor;
-        context.stroke();
-    
+    debug () {
         if(DEBUG == true) {
             console.log("circle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
+    }
+
+    loadIntoContext () {
+        this.transform();
+
+        context.beginPath();
+        context.ellipse(this.originX, this.originY, this.width, this.height, this._rotation, 0, 2 * Math.PI);
+    }
+
+    rotate () {
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        this._rotation = rota;
+    }
+
+    scale () {
+        let tempEndX = Math.abs(this.mouseX - this.originX);
+        let tempEndY = Math.abs(this.mouseY - this.originY);
+        
+        this.width = tempEndX;
+        this.height = tempEndY;
+    }
+
+    translate () {
+        let xDistance = this.mouseX - this.originX;
+        let yDistance = this.mouseY - this.originY;
+
+        let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+        
+        this.originX = tran[0][0];
+        this.originY = tran[1][0];
     }
 }
 
@@ -234,54 +224,34 @@ class Circle extends Ellipse {
         this._rotation = 0;
     }
 
-    draw () {	
-        switch(currentTool) {	
-            case 'rota':	
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);	
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";	
-
-                this._rotation = rota;	
-
-                break;	
-            case 'scal':
-                let tempEnd = Math.abs(this.mouseX - this.originX) > Math.abs(this.mouseY - this.originY) ? Math.abs(this.mouseX - this.originX) : Math.abs(this.mouseY - this.originY);	
-
-                this.width = tempEnd;
-                this.height = tempEnd;
-
-                break;	
-            case 'sele':	
-                break;	
-            case 'tran':	
-                let xDistance = this.mouseX - this.originX;	
-                let yDistance = this.mouseY - this.originY;	
-
-                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);	
-
-                this.originX = tran[0][0];	
-                this.originY = tran[1][0];	
-
-                break;	
-            default:	
-                // hits this when drawing previously drawn shape	
-                break;	
-        }	
-
-         // draw circle	
-        context.beginPath();	
-        context.ellipse(this.originX, this.originY, this.width, this.height, this._rotation, 0, 2 * Math.PI);	
-
-         // change fill color	
-        context.fillStyle = this.fillColor;	
-        context.fill();	
-
-         // change stroke color	
-        context.strokeStyle = this.strokeColor;	
-        context.stroke();	
-
-         if(DEBUG == true) {	
+    debug() {
+        if(DEBUG == true) {	
             console.log("circle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");	
         }	
+    }
+
+    rotate () {
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);	
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";	
+
+        this._rotation = rota;
+    }
+
+    scale () {
+        let tempEnd = Math.abs(this.mouseX - this.originX) > Math.abs(this.mouseY - this.originY) ? Math.abs(this.mouseX - this.originX) : Math.abs(this.mouseY - this.originY);	
+
+        this.width = tempEnd;
+        this.height = tempEnd;
+    }
+
+    translate () {
+        let xDistance = this.mouseX - this.originX;	
+        let yDistance = this.mouseY - this.originY;	
+
+        let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);	
+
+        this.originX = tran[0][0];	
+        this.originY = tran[1][0];
     }
 }
 
@@ -299,69 +269,35 @@ class Line extends Shape {
         ];
     }
 
-    checkCollision (mouseX, mouseY) {
-        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
-    }
-
-    draw () {
-        this.savePoints();
-
-        switch(currentTool) {
-            case 'rota':
-                // might use this later to rotate around center of line
-                // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
-                // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
-
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
-
-                // rotate(length of line, length of line, rotation)
-                let rotateAroundOrigin = Transform.rotate(this.width - this.originX, this.height - this.originY, rota);
-                let translateBack = Transform.translate(rotateAroundOrigin[0][0], rotateAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[1][0] = translateBack[0][0];
-                this._points[1][1] = translateBack[1][0];
-
-                break;
-            case 'scal':
-                this.width = this.mouseX;
-                this.height = this.mouseY;
-
-                this._points[1][0] = this.mouseX;
-                this._points[1][1] = this.mouseY;
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-                
-                let translateOrigin = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                let translateEnd = Transform.translate(this.width, this.height, xDistance, yDistance);
-                
-                [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
-                [this._points[1][0], this._points[1][1]] = [translateEnd[0][0], translateEnd[1][0]];
-                
-                break;
-            default:
-                // hits this when drawing previously drawn shape
-                break;
-        }
-
-        // draw line
-        context.beginPath();
-        context.moveTo(this._points[0][0], this._points[0][1]);
-        context.lineTo(this._points[1][0], this._points[1][1]);
-        context.closePath();
-    
-        // change stroke color
-        context.strokeStyle = this.strokeColor;
-        context.stroke();
-    
+    debug () {
         if(DEBUG == true) {
             console.log("line(x = " + this.originX + ", y = " + this.originY + ", width = " + this._calculatedWidth + ", height = " + this._calculatedHeight + ")");
         }
+    }
+
+    loadIntoContext () {
+        this.savePoints();
+        this.transform();
+
+        context.beginPath();
+        context.moveTo(this._points[0][0], this._points[0][1]);
+        context.lineTo(this._points[1][0], this._points[1][1]);
+    }
+
+    rotate () {
+        // might use this later to rotate around center of line
+        // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
+        // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
+
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        // rotate(length of line, length of line, rotation)
+        let rotateAroundOrigin = Transform.rotate(this.width - this.originX, this.height - this.originY, rota);
+        let translateBack = Transform.translate(rotateAroundOrigin[0][0], rotateAroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[1][0] = translateBack[0][0];
+        this._points[1][1] = translateBack[1][0];
     }
 
     savePoints () {
@@ -369,6 +305,25 @@ class Line extends Shape {
             [this.originX, this.originY], // (originX, originY)
             [this.width, this.height]  // (endX, endY)
         ];
+    }
+
+    scale () {
+        this.width = this.mouseX;
+        this.height = this.mouseY;
+
+        this._points[1][0] = this.mouseX;
+        this._points[1][1] = this.mouseY;
+    }
+
+    translate () {
+        let xDistance = this.mouseX - this.originX;
+        let yDistance = this.mouseY - this.originY;
+        
+        let translateOrigin = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+        let translateEnd = Transform.translate(this.width, this.height, xDistance, yDistance);
+        
+        [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
+        [this._points[1][0], this._points[1][1]] = [translateEnd[0][0], translateEnd[1][0]];
     }
 }
 
@@ -385,57 +340,19 @@ class Curve extends Shape {
         ];
     }
 
-    draw () {
-        this.savePoints();
-
-        switch(currentTool) {
-            case 'rota':
-
-                break;
-            case 'scal':
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                // initial logic for drawing a sine wave found here: https://stackoverflow.com/questions/29917446/drawing-sine-wave-in-canvas#answer-53239508
-
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-
-                let controlPoint01X = this.width * 2/5;
-                let controlPoint01Y = -1 * (this.height + (this.height * 3.6/5)); // this makes the height roughly the same size as other shapes with the same height
-                let controlPoint02X = this.width - (this.width * 2/5);
-                let controlPoint02Y = this.height + (this.height * 3.6/5);
-                
-                let translateOrigin = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                let translateControlPoint01 = Transform.translate(this.originX + controlPoint01X, this.originY + controlPoint01Y, xDistance, yDistance);
-                let translateControlPoint02 = Transform.translate(this.originX + controlPoint02X, this.originY + controlPoint02Y, xDistance, yDistance);
-                let translateEnd = Transform.translate(this.originX + this.width, this.originY, xDistance, yDistance);
-                
-                [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
-                [this._points[1][0], this._points[1][1]] = [translateControlPoint01[0][0], translateControlPoint01[1][0]];
-                [this._points[2][0], this._points[2][1]] = [translateControlPoint02[0][0], translateControlPoint02[1][0]];
-                [this._points[3][0], this._points[3][1]] = [translateEnd[0][0], translateEnd[1][0]];
-                
-                break;
-            default:
-                // hits this when drawing previously drawn shape
-                break;
-        }
-
-        // draw line
-        context.beginPath();
-        context.moveTo(this._points[0][0], this._points[0][1]);
-        context.bezierCurveTo(this._points[1][0], this._points[1][1], this._points[2][0], this._points[2][1], this._points[3][0], this._points[3][1]);
-
-        // change stroke color
-        context.strokeStyle = this.strokeColor;
-        context.stroke();
-
+    debug () {
         if(DEBUG == true) {
             console.log("curve(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this._calculatedHeight + ")");
         }
+    }
+
+    loadIntoContext () {
+        this.savePoints();
+        this.transform();
+
+        context.beginPath();
+        context.moveTo(this._points[0][0], this._points[0][1]);
+        context.bezierCurveTo(this._points[1][0], this._points[1][1], this._points[2][0], this._points[2][1], this._points[3][0], this._points[3][1]);
     }
 
     savePoints () {
@@ -445,6 +362,86 @@ class Curve extends Shape {
             [0, 0],
             [this.width, this.height]  // (endX, endY)
         ];
+    }
+
+    rotate () {
+        // need to do
+        let controlPoint01X = 0;
+        let controlPoint01Y = 0;
+        let controlPoint02X = 0;
+        let controlPoint02Y = 0;
+        let translateOrigin = 0;
+        let translateControlPoint01 = 0;
+        let translateControlPoint02 = 0;
+        let translateEnd = 0;
+        let xDistance = 0;
+        let yDistance = 0;
+    }
+
+    scale () {
+        let controlPoint01X = 0;
+        let controlPoint01Y = 0;
+        let controlPoint02X = 0;
+        let controlPoint02Y = 0;
+        let translateOrigin = 0;
+        let translateControlPoint01 = 0;
+        let translateControlPoint02 = 0;
+        let translateEnd = 0;
+        let xDistance = 0;
+        let yDistance = 0;
+        
+        xDistance = this.mouseX - this.originX;
+        yDistance = this.mouseY - this.originY;
+
+        this.width = xDistance;
+        this.height = yDistance;
+
+        controlPoint01X = this.width * 2/5;
+        controlPoint01Y = -1 * (this.height + (this.height * 3.6/5)); // this makes the height roughly the same size as other shapes with the same height
+        controlPoint02X = this.width - (this.width * 2/5);
+        controlPoint02Y = this.height + (this.height * 3.6/5);
+        
+        translateControlPoint01 = Transform.translate(this.originX + controlPoint01X, this.originY + controlPoint01Y, xDistance, yDistance);
+        translateControlPoint02 = Transform.translate(this.originX + controlPoint02X, this.originY + controlPoint02Y, xDistance, yDistance);
+        translateEnd = Transform.translate(this.originX + this.width, this.originY, xDistance, yDistance);
+        
+        [this._points[0][0], this._points[0][1]] = [this.originX, this.originY];
+        [this._points[1][0], this._points[1][1]] = [translateControlPoint01[0][0], translateControlPoint01[1][0]];
+        [this._points[2][0], this._points[2][1]] = [translateControlPoint02[0][0], translateControlPoint02[1][0]];
+        [this._points[3][0], this._points[3][1]] = [translateEnd[0][0], translateEnd[1][0]];
+    }
+
+    translate () {
+        // initial logic for drawing a sine wave found here: https://stackoverflow.com/questions/29917446/drawing-sine-wave-in-canvas#answer-53239508
+
+        let controlPoint01X = 0;
+        let controlPoint01Y = 0;
+        let controlPoint02X = 0;
+        let controlPoint02Y = 0;
+        let translateOrigin = 0;
+        let translateControlPoint01 = 0;
+        let translateControlPoint02 = 0;
+        let translateEnd = 0;
+        let xDistance = 0;
+        let yDistance = 0;
+
+        xDistance = this.mouseX - this.originX;
+        yDistance = this.mouseY - this.originY;
+
+        controlPoint01X = this.width * 2/5;
+        controlPoint01Y = -1 * (this.height + (this.height * 3.6/5)); // this makes the height roughly the same size as other shapes with the same height
+        controlPoint02X = this.width - (this.width * 2/5);
+        controlPoint02Y = this.height + (this.height * 3.6/5);
+        
+        translateOrigin = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+        translateControlPoint01 = Transform.translate(this.originX + controlPoint01X, this.originY + controlPoint01Y, xDistance, yDistance);
+        translateControlPoint02 = Transform.translate(this.originX + controlPoint02X, this.originY + controlPoint02Y, xDistance, yDistance);
+        translateEnd = Transform.translate(this.originX + this.width, this.originY, xDistance, yDistance);
+        
+        [this._points[0][0], this._points[0][1]] = [translateOrigin[0][0], translateOrigin[1][0]];
+        [this._points[1][0], this._points[1][1]] = [translateControlPoint01[0][0], translateControlPoint01[1][0]];
+        [this._points[2][0], this._points[2][1]] = [translateControlPoint02[0][0], translateControlPoint02[1][0]];
+        [this._points[3][0], this._points[3][1]] = [translateEnd[0][0], translateEnd[1][0]];
     }
 }
 
@@ -461,87 +458,51 @@ class Rectangle extends Shape {
         ];
     }
 
-    checkCollision (mouseX, mouseY) {
-        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
-    }
-
-    draw () {
-        switch(currentTool) {
-            case 'rota':
-                // might use this later to rotate around center of line
-                // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
-                // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
-
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
-
-                // top right
-                let rotateTopRightAroundOrigin = Transform.rotate(this.width, 0, rota);
-                let translateBackTopRight = Transform.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[1][0] = translateBackTopRight[0][0];
-                this._points[1][1] = translateBackTopRight[1][0];
-
-                // bottom right
-                let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
-                let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[2][0] = translateBackBottomRight[0][0];
-                this._points[2][1] = translateBackBottomRight[1][0];
-
-                // bottom left
-                let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
-                let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[3][0] = translateBackBottomLeft[0][0];
-                this._points[3][1] = translateBackBottomLeft[1][0];
-
-                break;
-            case 'scal':
-                this.width = this.mouseX - this.originX;
-                this.height = this.mouseY - this.originY;
-
-                this.recalculatePoints();
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-
-                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                
-                this.originX = tran[0][0];
-                this.originY = tran[1][0];
-
-                this.recalculatePoints();
-                
-                break;
-            default:
-                this.recalculatePoints();
-                break;
-        }
-
-        // draw rectangle
-        context.beginPath();
-        context.moveTo(this.originX, this.originY);              // top left
-        context.lineTo(this._points[1][0], this._points[1][1]);    // top right
-        context.lineTo(this._points[2][0], this._points[2][1]);    // bottom right
-        context.lineTo(this._points[3][0], this._points[3][1]);    // bottom left
-        context.closePath();
-    
-        // change fill color
-        context.fillStyle = this.fillColor;
-        context.fill();
-    
-        // change stroke color
-        context.strokeStyle = this.strokeColor;
-        context.stroke();
-    
+    debug () {
         if(DEBUG == true) {
             console.log("rect(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
+    }
+
+    loadIntoContext () {
+        this.recalculatePoints();
+        this.transform();
+
+        context.beginPath();
+        context.moveTo(this.originX, this.originY);                 // top left
+        context.lineTo(this._points[1][0], this._points[1][1]);    // top right
+        context.lineTo(this._points[2][0], this._points[2][1]);    // bottom right
+        context.lineTo(this._points[3][0], this._points[3][1]);    // bottom left
+    }
+
+    rotate () {
+        // might use this later to rotate around center of line
+        // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
+        // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
+
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        // top right
+        let rotateTopRightAroundOrigin = Transform.rotate(this.width, 0, rota);
+        let translateBackTopRight = Transform.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[1][0] = translateBackTopRight[0][0];
+        this._points[1][1] = translateBackTopRight[1][0];
+
+        // bottom right
+        let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
+        let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[2][0] = translateBackBottomRight[0][0];
+        this._points[2][1] = translateBackBottomRight[1][0];
+
+        // bottom left
+        let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
+        let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[3][0] = translateBackBottomLeft[0][0];
+        this._points[3][1] = translateBackBottomLeft[1][0];
     }
 
     recalculatePoints () {
@@ -551,6 +512,25 @@ class Rectangle extends Shape {
             [this.originX + this.width, this.originY + this.height], // bottom right
             [this.originX, this.originY + this.height], // bottom left
         ];
+    }
+
+    scale () {
+        this.width = this.mouseX - this.originX;
+        this.height = this.mouseY - this.originY;
+
+        this.recalculatePoints();
+    }
+
+    translate () {
+        let xDistance = this.mouseX - this.originX;
+        let yDistance = this.mouseY - this.originY;
+
+        let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+        
+        this.originX = tran[0][0];
+        this.originY = tran[1][0];
+
+        this.recalculatePoints();
     }
 }
 
@@ -566,94 +546,19 @@ class Square extends Rectangle {
         ];
     }
 
-    checkCollision (mouseX, mouseY) {
-        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
-    }
-
-    draw () {
-        switch(currentTool) {
-            case 'rota':
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
-
-                // top right
-                let rotateTopRightAroundOrigin = Transform.rotate(this.width, 0, rota);
-                let translateBackTopRight = Transform.translate(rotateTopRightAroundOrigin[0][0], rotateTopRightAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[1][0] = translateBackTopRight[0][0];
-                this._points[1][1] = translateBackTopRight[1][0];
-
-                // bottom right
-                let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
-                let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[2][0] = translateBackBottomRight[0][0];
-                this._points[2][1] = translateBackBottomRight[1][0];
-
-                // bottom left
-                let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
-                let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[3][0] = translateBackBottomLeft[0][0];
-                this._points[3][1] = translateBackBottomLeft[1][0];
-
-                break;
-            case 'scal':
-                let tempEnd = this.mouseX - this.originX > this.mouseY - this.originY ? this.mouseX - this.originX : this.mouseY - this.originY;
-
-                this.width = tempEnd;
-                this.height = tempEnd;
-
-                this.recalculatePoints();
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-
-                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                
-                this.originX = tran[0][0];
-                this.originY = tran[1][0];
-
-                this.recalculatePoints();
-                
-                break;
-            default:
-                this.recalculatePoints();
-                break;
-        }
-
-        // draw rectangle
-        context.beginPath();
-        context.moveTo(this.originX, this.originY);                 // top left
-        context.lineTo(this._points[1][0], this._points[1][1]);     // top right
-        context.lineTo(this._points[2][0], this._points[2][1]);     // bottom right
-        context.lineTo(this._points[3][0], this._points[3][1]);     // bottom left
-        context.closePath();
-    
-        // change fill color
-        context.fillStyle = this.fillColor;
-        context.fill();
-    
-        // change stroke color
-        context.strokeStyle = this.strokeColor;
-        context.stroke();
-    
+    debug () {
         if(DEBUG == true) {
-            console.log("rect(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
+            console.log("squa(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
         }
     }
 
-    recalculatePoints () {
-        this._points = [
-            [this.originX, this.originY], // top left
-            [this.originX + this.width, this.originY], // top right
-            [this.originX + this.width, this.originY + this.height], // bottom right
-            [this.originX, this.originY + this.height], // bottom left
-        ];
+    scale () {
+        let tempEnd = this.mouseX - this.originX > this.mouseY - this.originY ? this.mouseX - this.originX : this.mouseY - this.originY;
+
+        this.width = tempEnd;
+        this.height = tempEnd;
+
+        this.recalculatePoints();
     }
 }
 
@@ -663,81 +568,6 @@ class Triangle extends Shape {
         this._shapeType = 'tria';
     }
 
-    checkCollision (mouseX, mouseY) {
-        return mouseX >= this.originX && mouseX <= this.originX + width && mouseY >= this.originY && mouseY <= this.originY + height;
-    }
-
-    draw () {
-        switch(currentTool) {
-            case 'rota':
-                let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
-                document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
-
-                this.calculatePoints();
-
-                // bottom right
-                let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
-                let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[1][0] = translateBackBottomRight[0][0];
-                this._points[1][1] = translateBackBottomRight[1][0];
-
-                // bottom left
-                let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
-                let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
-
-                this._points[2][0] = translateBackBottomLeft[0][0];
-                this._points[2][1] = translateBackBottomLeft[1][0];
-
-                break;
-            case 'scal':
-                this.width = this.mouseX - this.originX;
-                this.height = this.mouseY - this.originY;
-
-                this.calculatePoints();
-                
-                break;
-            case 'sele':
-                break;
-            case 'tran':
-                let xDistance = this.mouseX - this.originX;
-                let yDistance = this.mouseY - this.originY;
-
-                let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
-                
-                this.originX = tran[0][0];
-                this.originY = tran[1][0];
-
-                this.calculatePoints();
-                
-                break;
-            default:
-                // hits this when drawing previously drawn shape
-                break;
-        }
-
-        // draw triangle
-        context.beginPath();
-
-        context.moveTo(this._points[0][0], this._points[0][1]);
-        context.lineTo(this._points[1][0], this._points[1][1]);
-        context.lineTo(this._points[2][0], this._points[2][1]);
-        context.lineTo(this._points[0][0], this._points[0][1]);
-        context.closePath();
-    
-        // change fill color
-        context.fillStyle = this.fillColor;
-        context.fill();
-    
-        // change stroke color
-        context.strokeStyle = this.strokeColor;
-        context.stroke();
-    
-        if(DEBUG == true) {
-            console.log("triangle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
-        }
-    }
-
     calculatePoints () {
         this._points = [
             [this.originX, this.originY], // top left
@@ -745,4 +575,77 @@ class Triangle extends Shape {
             [this.originX, this.originY + this.height], // bottom left
         ];
     }
+
+    debug () {
+        if(DEBUG == true) {
+            console.log("triangle(x = " + this.originX + ", y = " + this.originY + ", width = " + this.width + ", height = " + this.height + ")");
+        }
+    }
+
+    loadIntoContext () {
+        this.calculatePoints();
+        this.transform();
+
+        context.beginPath();
+        context.moveTo(this._points[0][0], this._points[0][1]);
+        context.lineTo(this._points[1][0], this._points[1][1]);
+        context.lineTo(this._points[2][0], this._points[2][1]);
+        context.lineTo(this._points[0][0], this._points[0][1]);
+    }
+
+    rotate () {
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        this.calculatePoints();
+
+        // bottom right
+        let rotateBottomRightAroundOrigin = Transform.rotate(this.width, this.height, rota);
+        let translateBackBottomRight = Transform.translate(rotateBottomRightAroundOrigin[0][0], rotateBottomRightAroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[1][0] = translateBackBottomRight[0][0];
+        this._points[1][1] = translateBackBottomRight[1][0];
+
+        // bottom left
+        let rotateBottomLeftAroundOrigin = Transform.rotate(0, this.height, rota);
+        let translateBackBottomLeft = Transform.translate(rotateBottomLeftAroundOrigin[0][0], rotateBottomLeftAroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[2][0] = translateBackBottomLeft[0][0];
+        this._points[2][1] = translateBackBottomLeft[1][0];
+    }
+
+    scale () {
+        this.width = this.mouseX - this.originX;
+        this.height = this.mouseY - this.originY;
+
+        this.calculatePoints();
+    }
+
+    translate () {
+        let xDistance = this.mouseX - this.originX;
+        let yDistance = this.mouseY - this.originY;
+
+        let tran = Transform.translate(this.originX, this.originY, xDistance, yDistance);
+        
+        this.originX = tran[0][0];
+        this.originY = tran[1][0];
+
+        this.calculatePoints();
+    }
+}
+
+// hold control
+// on click
+// -- set current line end
+// -- add line start
+// movement sets temp end
+// release control
+// saves line
+class Polyline extends Shape {
+
+}
+
+// same as polyline but context.closePath() at the end
+class Polygon extends Shape {
+
 }

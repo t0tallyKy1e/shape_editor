@@ -21,6 +21,7 @@
             currentTool = 'tran';
 
             selectMode = false;
+            selectedShape = -1;
 
             tempShape = []; // used for saving the currently drawn shape
 
@@ -89,7 +90,7 @@
                             case "curv":
                                 let tempCurv = new Curve();
                                 tempCurv.load(shape[2]);
-                                tempCurv.draw();
+                                tempCurv.draw(false);
                                 break;
                             case "elli":
                                 let tempElli = new Ellipse();
@@ -99,11 +100,12 @@
                             case "line":
                                 let tempLine = new Line();
                                 tempLine.load(shape[2]);
-                                tempLine.draw();
+                                tempLine.draw(false);
                                 break;
                             case "pgon":
                                 break;
                             case "plin":
+                                tempLine.draw(false);
                                 break;
                             case "rect":
                                 let tempRect = new Rectangle();
@@ -241,6 +243,67 @@
                 releasedX : 0,
                 releasedY : 0,
 
+                checkSelect : () => {
+                    let foundShape = false;
+
+                    if(selectMode) {
+                        for(let i = Canvas.drawnShapes.length - 1; i >= 0 && !foundShape; i--) {
+                            let shape = Canvas.drawnShapes[i];
+                            let temp = new Shape();
+
+                            switch(shape[0]) {
+                                case "circ":
+                                    temp = new Circle();
+                                    break;
+                                case "curv":
+                                    temp = new Curve();
+                                    break;
+                                case "elli":
+                                    temp = new Ellipse();
+                                    break;
+                                case "line":
+                                    temp = new Line();
+                                    break;
+                                case "pgon":
+                                    break;
+                                case "plin":
+                                    break;
+                                case "rect":
+                                    temp = new Rectangle();
+                                    break;
+                                case "squa":
+                                    temp = new Square();
+                                    break;
+                                case "tria":
+                                    temp = new Triangle();
+                                    break;
+                                default:
+                                    console.log("Error -> Canvas.drawPrevious(): no shape definition for " + shape[0] + ".");
+                                    break;
+                            }
+
+                            temp.load(shape[2]);
+                            temp.loadIntoContext();
+
+                            if(shape[0] == 'line' || shape[0] == 'curv') {
+                                context.lineWidth = 5;
+                                // context.stroke();
+                            }
+
+                            // need to load shape into context with no stroke
+                            if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
+                                console.log("index [" + i + "]: " + shape);
+                                foundShape = true;
+                            } else if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
+                                console.log("index [" + i + "]: " + shape);
+                                foundShape = true;
+                            }
+
+                            context.lineWidth = 1;
+                        }
+                    }
+                },
+
                 pressed : (event) => {
                     Mouse.overCanvas = event.pageX - pageMarginX >= 0 && event.pageX - pageMarginX <= Canvas.size && event.pageY - pageMarginY >= 0 && event.pageY - pageMarginY <= Canvas.size;
 
@@ -250,26 +313,7 @@
 
                         Mouse.isPressed = true;
 
-                        let foundShape = false
-
-
-                        // let tempCirc = new Circle();
-                        // tempCirc.load(shape[2]);
-
-                        if(selectMode) {
-                            for(let i = Canvas.drawnShapes.length - 1; i >= 0 && !foundShape; i--) {
-                                let temp = new Line();
-                                temp.load(Canvas.drawnShapes[i][2]);
-                                temp.loadIntoContext();
-
-                                // need to load shape into context with no stroke
-                                if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
-                                    console.log("index [" + i + "]: " + Canvas.drawnShapes[i]);
-                                    foundShape = true;
-                                }
-                            }
-                        }
-
+                        Mouse.checkSelect();
 
                         document.getElementById('mouse_pressed_x').innerHTML = Mouse.pressedX;
                         document.getElementById('mouse_pressed_y').innerHTML = Mouse.pressedY;
@@ -288,36 +332,43 @@
                         switch(currentShape) {
                             case "circ":
                                 tempShape = new Circle(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
                                 break;
                             case "curv":
                                 tempShape = new Curve(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape.draw(false);
                                 break;
                             case "elli":
                                 tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, currentHeight / 2, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape.draw();
                                 break;
                             case "line":
                                 tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentWidth, Mouse.pressedY + currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
+                                tempShape.draw(false);
                                 break;
                             case "pgon":
+                                tempShape.draw();
                                 break;
                             case "plin":
                                 tempShape = new Polygon(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw(false);
                                 break;
                             case "rect":
                                 tempShape = new Rectangle(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
                                 break;
                             case "squa":
                                 tempShape = new Square(Mouse.pressedX, Mouse.pressedY, currentWidth, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
                                 break;
                             case "tria":
                                 tempShape = new Triangle(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
+                                tempShape.draw();
                                 break;
                             default:
                                 console.log("Error: no shape selected.");
                                 break;
                         }
-
-                        tempShape.draw();
                     }
 
                     document.getElementById('mouse_move_x').innerHTML = Mouse.moveX;
@@ -723,8 +774,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            
+                        <td class="rgb-range">
                         </td>
                         <td class="rgb-range">
                             blue: <input type='range' min='0' max='255' value='0' id='shape-fill-color-range-b' onchange="setCurrentFill()" />
@@ -734,6 +784,13 @@
                         </td>
                     </tr>
                 </table>
+            </div>
+
+            <div id="instructions" class="section">
+                <h2>instructions</h2>
+                <span>
+                    
+                </span>
             </div>
         </div>
     </body>

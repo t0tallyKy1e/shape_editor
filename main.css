@@ -225,6 +225,10 @@ td {
     border: 1px solid #448AFF;
 }
 
+#shape-sides-range {
+    width: 54%;
+}
+
 #toolbar {
     background-color: #212121;
     margin: 0px;
