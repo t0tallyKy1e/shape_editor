@@ -467,10 +467,11 @@ class Rectangle extends Shape {
         this.transform();
 
         context.beginPath();
-        context.moveTo(this.originX, this.originY);                 // top left
-        context.lineTo(this._points[1][0], this._points[1][1]);    // top right
-        context.lineTo(this._points[2][0], this._points[2][1]);    // bottom right
-        context.lineTo(this._points[3][0], this._points[3][1]);    // bottom left
+        context.moveTo(this.originX, this.originY);                 
+        context.lineTo(this._points[1][0], this._points[1][1]);    // top
+        context.lineTo(this._points[2][0], this._points[2][1]);    // right
+        context.lineTo(this._points[3][0], this._points[3][1]);    // bottom
+        context.lineTo(this._points[0][0], this._points[0][1]);    // left
     }
 
     rotate () {
@@ -642,6 +643,10 @@ class Polyline {
         this.points = points;
     }
 
+    addLine (mousePressedX, mousePressedY) {
+        this.points.push([mousePressedX, mousePressedY]);
+    }
+
     draw () {
         context.beginPath();
         context.moveTo(this.points[0][0], this.points[0][1]);
@@ -668,23 +673,57 @@ class Polyline {
         context.stroke();
     }
 
+    load (shape) {
+        let jsonShape = JSON.parse(shape);
+        this.originX = jsonShape.originX;
+        this.originY = jsonShape.originY;
+        this.points = jsonShape.points;
+        this.strokeColor = jsonShape.strokeColor;
+    }
+
+    loadIntoContext () {
+        context.beginPath();
+        context.moveTo(this.points[0][0], this.points[0][1]);
+        
+        for(let i = 1; i < this.points.length; ++i) {
+            context.lineTo(this.points[i][0], this.points[i][1]);
+        }
+    }
+
+    save () {
+        if(!!Canvas.drawnShapes[0]) {
+            Canvas.drawnShapes.push([this._shapeType, currentTool, this.toString()]);
+        } else {
+            Canvas.drawnShapes[0] = [this._shapeType, currentTool, this.toString()];
+        }
+    }
+
     startDraw () {
         this.points.push([this.originX, this.originY]);
     }
 
-    addLine (mousePressedX, mousePressedY) {
-        this.points.push([mousePressedX, mousePressedY]);
+    toJSON () {
+        return {
+            originX: this.originX,
+            originY: this.originY,
+            points: this.points,
+            strokeColor: this.strokeColor,
+        }
+    }
+
+    toString () {
+        let jsonRep = this.toJSON();
+        return JSON.stringify(jsonRep);
     }
 }
 
 class Polygon extends Polyline {
     constructor(originX, originY, points = [], strokeColor, fillColor) {
-        super(originX, originY, strokeColor);
+        super(originX, originY, points, strokeColor);
 
         this.fillColor = fillColor;
 
         this._shapeType = 'pgon';
-        this.points = points;
     }
 
     draw () {
@@ -701,5 +740,24 @@ class Polygon extends Polyline {
         context.fillStyle = this.fillColor;
         context.stroke();
         context.fill();
+    }
+
+    load (shape) {
+        let jsonShape = JSON.parse(shape);
+        this.originX = jsonShape.originX;
+        this.originY = jsonShape.originY;
+        this.points = jsonShape.points;
+        this.strokeColor = jsonShape.strokeColor;
+        this.fillColor = jsonShape.fillColor;
+    }
+
+    toJSON () {
+        return {
+            originX: this.originX,
+            originY: this.originY,
+            points: this.points,
+            strokeColor: this.strokeColor,
+            fillColor: this.fillColor,
+        }
     }
 }

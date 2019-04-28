@@ -26,9 +26,10 @@ body {
 
 button {
     background-color: #424242;
-    color: #448AFF;
     border: 1px solid #448AFF;
     border-radius: 5px;
+    color: #448AFF;
+    font-family: monospace;
     padding: 5px 8px 5px 8px;
 }
 

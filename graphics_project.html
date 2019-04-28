@@ -93,7 +93,7 @@
                             case "curv":
                                 let tempCurv = new Curve();
                                 tempCurv.load(shape[Enum.SHAPE_DEF]);
-                                tempCurv.draw(false);
+                                tempCurv.draw(false, false);
                                 break;
                             case "elli":
                                 let tempElli = new Ellipse();
@@ -103,14 +103,17 @@
                             case "line":
                                 let tempLine = new Line();
                                 tempLine.load(shape[Enum.SHAPE_DEF]);
-                                tempLine.draw(false);
+                                tempLine.draw(false, false);
                                 break;
                             case "pgon":
+                                let tempPolygon = new Polygon();
+                                tempPolygon.load(shape[Enum.SHAPE_DEF]);
+                                tempPolygon.draw();
                                 break;
                             case "plin":
-                                //let tempPolyLine = new Polyline();
-                                //tempPolyLine.load(shape[Enum.SHAPE_DEF]);
-                                //tempPolyline.draw(false);
+                                let tempPolyLine = new Polyline();
+                                tempPolyLine.load(shape[Enum.SHAPE_DEF]);
+                                tempPolyLine.draw();
                                 break;
                             case "rect":
                                 let tempRect = new Rectangle();
@@ -146,6 +149,17 @@
 
                 redo : () => {
 
+                },
+
+                reset : () => {
+                    let shouldClear = confirm("Are you sure you want to clear the canvas? This will delete your entire drawing.");
+
+                    if(shouldClear) {
+                        Canvas.clear();
+                        Canvas.drawnShapes = new Array();
+                    } else {
+
+                    }
                 },
 
                 undo : () => {
@@ -268,9 +282,9 @@
                         let shape = Canvas.drawnShapes[i];
                         let temp = new Shape();
 
-                        currentTool = shape[1];
+                        currentTool = shape[Enum.SHAPE_TOOL];
 
-                        switch(shape[0]) {
+                        switch(shape[Enum.SHAPE_TYPE]) {
                             case "circ":
                                 temp = new Circle();
                                 break;
@@ -284,8 +298,10 @@
                                 temp = new Line();
                                 break;
                             case "pgon":
+                                temp = new Polygon();
                                 break;
                             case "plin":
+                                temp = new Polyline();
                                 break;
                             case "rect":
                                 temp = new Rectangle();
@@ -297,27 +313,28 @@
                                 temp = new Triangle();
                                 break;
                             default:
-                                console.log("Error -> Canvas.drawPrevious(): no shape definition for " + shape[0] + ".");
+                                console.log("Error -> Canvas.drawPrevious(): no shape definition for " + shape[Enum.SHAPE_TYPE] + ".");
                                 break;
                         }
 
-                        temp.load(shape[2]);
+                        temp.load(shape[Enum.SHAPE_DEF]);
                         temp.loadIntoContext();
                         context.strokeStyle = "cccccc";
                         context.stroke();
                         context.strokeStyle = this.strokeColor;
 
-                        if(shape[0] == 'line' || shape[0] == 'curv') {
+                        if(shape[Enum.SHAPE_TYPE] == 'line' || shape[Enum.SHAPE_TYPE] == 'curv' || shape[Enum.SHAPE_TYPE] == 'plin') {
                             context.lineWidth = 5;
-                            // context.stroke();
-                        }
 
-                        if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
-                            console.log("index [" + i + "]: " + shape);
-                            foundShape = true;
-                        } else if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
-                            console.log("index [" + i + "]: " + shape);
-                            foundShape = true;
+                            if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
+                                console.log("index [" + i + "]: " + shape);
+                                foundShape = true;
+                            }
+                        } else {
+                            if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
+                                console.log("index [" + i + "]: " + shape);
+                                foundShape = true;
+                            } 
                         }
 
                         context.lineWidth = 1;
@@ -339,25 +356,21 @@
 
                         if(selectMode) {
                             Mouse.checkSelect();
-                        }
+                        } else {
+                            if((currentShape == 'plin' || currentShape == 'pgon') && Key.checkPressed(Key.ctrl) && currentPLine == 0) {
+                                drawing = true;
 
-                        if((currentShape == 'plin' || currentShape == 'pgon') && Key.checkPressed(Key.ctrl) && currentPLine == 0) {
-                            drawing = true;
+                                if(currentShape == 'plin') {
+                                    tempShape = new Polyline(Mouse.pressedX, Mouse.pressedY, [], currentStroke);
+                                } else {
+                                    tempShape = new Polygon(Mouse.pressedX, Mouse.pressedY, [], currentStroke, currentFill);
+                                }
 
-                            if(currentShape == 'plin') {
-                                tempShape = new Polyline(Mouse.pressedX, Mouse.pressedY, [], currentStroke);
-                            } else {
-                                tempShape = new Polygon(Mouse.pressedX, Mouse.pressedY, [], currentStroke, currentFill);
+                                tempShape.startDraw();
+                                currentPLine++;
+                            } else if ((currentShape == 'plin' || currentShape == 'pgon') && Key.checkPressed(Key.ctrl) && drawing) {
+                                tempShape.addLine(Mouse.pressedX, Mouse.pressedY);
                             }
-                            tempShape.startDraw();
-                            currentPLine++;
-                        } else if ((currentShape == 'plin' || currentShape == 'pgon') && Key.checkPressed(Key.ctrl) && drawing) {
-                            tempShape.addLine(Mouse.pressedX, Mouse.pressedY);
-                        } else if((currentShape == 'plin' || currentShape == 'pgon') && !Key.checkPressed(Key.ctrl)){
-                            tempShape.draw();
-
-                            drawing = false;
-                            currentPLine = 0;
                         }
 
                         document.getElementById('mouse_pressed_x').innerHTML = Mouse.pressedX;
@@ -372,7 +385,7 @@
 
                     if(Mouse.isPressed && !selectMode) {
                         Canvas.clear();
-                        // Canvas.drawPrevious();
+                        Canvas.drawPrevious();
 
                         switch(currentShape) {
                             case "circ":
@@ -381,7 +394,7 @@
                                 break;
                             case "curv":
                                 tempShape = new Curve(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw(false);
+                                tempShape.draw(false, false);
                                 break;
                             case "elli":
                                 tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, currentHeight / 2, Mouse.moveX, Mouse.moveY, currentStroke);
@@ -389,26 +402,16 @@
                                 break;
                             case "line":
                                 tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentWidth, Mouse.pressedY + currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw(false);
+                                tempShape.draw(false, false);
                                 break;
                             case "pgon":
-                                // tempShape = new Polygon(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
-                                // tempShape.draw();
-                                if(Key.checkPressed(Key.ctrl)) {
-                                    console.log("drawing");
+                                if(Key.checkPressed(Key.ctrl) && drawing) {
                                     tempShape.drawTemp(Mouse.moveX, Mouse.moveY);
-                                } else {
-                                    console.log("not drawing");
                                 }
                                 break;
                             case "plin":
-                                // tempShape = new Polyline(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke, currentFill);
-                                // tempShape.draw(false);
-                                if(Key.checkPressed(Key.ctrl)) {
-                                    console.log("drawing");
+                                if(Key.checkPressed(Key.ctrl) && drawing) {
                                     tempShape.drawTemp(Mouse.moveX, Mouse.moveY);
-                                } else {
-                                    console.log("not drawing");
                                 }
                                 break;
                             case "rect":
@@ -445,10 +448,19 @@
 
                         Mouse.isPressed = false;
 
-                        if(!!tempShape && !selectMode && currentShape != 'plin') {
+                        if(!!tempShape && !selectMode && (currentShape != 'plin' && currentShape != 'pgon')) {
                             tempShape.save();
+                            tempShape = null;
+                        } else if (!!tempShape && !selectMode && (currentShape == 'plin' || currentShape == 'pgon') && !Key.checkPressed(Key.ctrl)) {
+                            tempShape.save();
+                            drawing = false;
+                            currentPLine = 0;
+                            tempShape = null;
                         }
                     }
+
+                    Canvas.clear();
+                    Canvas.drawPrevious();
                     
                     document.getElementById('mouse_released_x').innerHTML = Mouse.releasedX;
                     document.getElementById('mouse_released_y').innerHTML = Mouse.releasedY;
@@ -526,9 +538,11 @@
                             }
                         }
 
-                        // blue bar
-                        let bluebar = document.getElementById("blue-bar");
-                        bluebar.style.color = "#448AFF";
+                        // blue bars
+                        let bluebars = document.getElementsByClassName('blue-bar');
+                        for(let i = 0; i < bluebars.length; ++i) {
+                            bluebars[i].style.color = "#448AFF";
+                        }
 
                         // shape size input
                         let shapeHeightInput = document.getElementById('shape-height-text');
@@ -618,9 +632,11 @@
                             }
                         }
 
-                        // blue bar
-                        let bluebar = document.getElementById("blue-bar");
-                        bluebar.style.color = "#000000";
+                        // blue bars
+                        let bluebars = document.getElementsByClassName("blue-bar");
+                        for(let i = 0; i < bluebars.length; ++i) {
+                            bluebars[i].style.color = "#000000";
+                        }
 
                         // toolbar
                         let toolbar = document.getElementById("toolbar");
@@ -734,9 +750,11 @@
             <a onclick="File.save();">Save</a>
             <a onclick="File.load();">Load</a>
             <a onclick="File.exportAsPNG();">Export as PNG</a>
-            <span id="blue-bar">|</span>
+            <span class="blue-bar">|</span>
             <a onclick="Canvas.undo()">Undo</a>
             <a onclick="Canvas.redo();">Redo</a>
+            <span class="blue-bar">|</span>
+            <a onclick="Canvas.reset();">Clear Canvas</a>
             <span class="button-group">
                 <button class="button-group-button" id="dark-mode-button-dark" onclick="UI.switchDisplayMode(true);">☽</a>
                 <button disabled class="button-group-button"id="dark-mode-button-light" onclick="UI.switchDisplayMode(false);">☼</a>
@@ -850,13 +868,13 @@
                 <h2>instructions</h2>
                 <span>
                     <h3>drawing</h3>
-                    <p>for a classic style of drawing, click the <strong></strong>Scale button</strong> and then click the button of the shape you would like to draw.</p>
-                    <h3>poly-line drawing</h3>
+                    <p>for a classic style of drawing, click the <strong>Scale button</strong> and then click the button of the shape you would like to draw.</p>
+                    <h3>poly-line / polygon drawing</h3>
                     <p><ul>
-                        <li>to begin drawing a poly-line, hold CTRL and click the mouse where you would like the line to begin</li>
+                        <li>to begin drawing a poly-line / polygon, hold CTRL and click the mouse where you would like the line to begin</li>
                         <li>keep CTRL and the mouse pressed and drag until you reach the point where you would like the current line to end. click the mouse (this will end the current line and begin the next line).</li>
                         <li>repeat this process until you are satisfied with the shape of the line.</li>
-                        <li>to stop drawing a poly-line, release CTRL and click the mouse anywhere in the canvas.</li>
+                        <li>to stop drawing a poly-line / polygon, release CTRL and click the mouse anywhere in the canvas.</li>
                     </ul></p>
                 </span>
             </div>
