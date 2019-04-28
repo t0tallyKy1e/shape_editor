@@ -445,7 +445,6 @@ class Curve extends Shape {
     }
 }
 
-// i want to rewrite the below as n-gons where the number of sides is a new parameter... this will make polygons easier to work with later
 class Rectangle extends Shape {
     constructor(originX = 0, originY = 0, width = 1, height = 1, mouseX = 0, mouseY = 0, strokeColor = '#000000', fillColor = '#000000') {
         super(originX, originY, width, height, mouseX, mouseY, strokeColor, fillColor);
@@ -633,18 +632,74 @@ class Triangle extends Shape {
     }
 }
 
-// hold control
-// on click
-// -- set current line end
-// -- add line start
-// movement sets temp end
-// release control
-// saves line
-class Polyline extends Shape {
+class Polyline {
+    constructor(originX, originY, points = [], strokeColor) {
+        this.originX = originX;
+        this.originY = originY;
+        this.strokeColor = strokeColor;
 
+        this._shapeType = 'plin';
+        this.points = points;
+    }
+
+    draw () {
+        context.beginPath();
+        context.moveTo(this.points[0][0], this.points[0][1]);
+        
+        for(let i = 1; i < this.points.length; ++i) {
+            context.lineTo(this.points[i][0], this.points[i][1]);
+        }
+
+        context.strokeStyle = this.strokeColor;
+        context.stroke();
+    }
+
+    drawTemp (mouseMoveX, mouseMoveY) {
+        context.beginPath();
+        context.moveTo(this.points[0][0], this.points[0][1]);
+        
+        for(let i = 1; i < this.points.length; ++i) {
+            context.lineTo(this.points[i][0], this.points[i][1]);
+        }
+
+        context.lineTo(mouseMoveX, mouseMoveY);
+
+        context.strokeStyle = '#cccccc';
+        context.stroke();
+    }
+
+    startDraw () {
+        this.points.push([this.originX, this.originY]);
+    }
+
+    addLine (mousePressedX, mousePressedY) {
+        this.points.push([mousePressedX, mousePressedY]);
+    }
 }
 
-// same as polyline but context.closePath() at the end
-class Polygon extends Shape {
+class Polygon extends Polyline {
+    constructor(originX, originY, points = [], strokeColor, fillColor) {
+        super(originX, originY, strokeColor);
 
+        this.fillColor = fillColor;
+
+        this._shapeType = 'pgon';
+        this.points = points;
+    }
+
+    draw () {
+        context.beginPath();
+        context.moveTo(this.points[0][0], this.points[0][1]);
+        
+        for(let i = 1; i < this.points.length; ++i) {
+            context.lineTo(this.points[i][0], this.points[i][1]);
+        }
+
+        context.closePath();
+
+        context.strokeStyle = this.strokeColor;
+        context.fillStyle = this.fillColor;
+        context.stroke();
+        context.fill();
+    }
 }
