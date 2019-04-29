@@ -518,15 +518,32 @@
                         // buttons
                         let buttonElements = document.getElementsByTagName('button');
                         for(let i = 0; i < buttonElements.length; ++i) {
-                            if(buttonElements[i].disabled) {
-                                buttonElements[i].style.backgroundColor = "#a5a5a5";
-                                buttonElements[i].style.borderColor = "#636363";
-                                buttonElements[i].style.color = "#636363";
-                            } else {
-                                buttonElements[i].style.backgroundColor = "#424242";
-                                buttonElements[i].style.borderColor = "#448AFF";
-                                buttonElements[i].style.color = "#448AFF";
+                            if(buttonElements[i].id != "select-mode-disabled" && buttonElements[i].id != "select-mode-enabled"){
+                                if(buttonElements[i].disabled) {
+                                    buttonElements[i].style.backgroundColor = "#a5a5a5";
+                                    buttonElements[i].style.borderColor = "#636363";
+                                    buttonElements[i].style.color = "#636363";
+                                } else {
+                                    buttonElements[i].style.backgroundColor = "#424242";
+                                    buttonElements[i].style.borderColor = "#448AFF";
+                                    buttonElements[i].style.color = "#448AFF";
+                                }
                             }
+                        }
+
+                        // select mode
+                        if(selectMode) {
+                            let selectButton = document.getElementById("select-mode-enabled");
+
+                            selectButton.style.color = "#636363";
+                            selectButton.style.backgroundColor = "#a5a5a5";
+                            selectButton.style.borderColor = "#636363";
+                        } else {
+                            let selectButton = document.getElementById("select-mode-disabled");
+
+                            selectButton.style.color = "#448aff";
+                            selectButton.style.backgroundColor = "#424242";
+                            selectButton.style.borderColor = "#448aff";
                         }
 
                         // section
@@ -743,6 +760,20 @@
                 document.getElementById('shape-stroke-color-text').value = currentStroke;
                 document.getElementById('shape-stroke-color-text').style.backgroundColor = currentStroke;
             }
+
+            setSelectMode = (mode) => {
+                selectMode = mode;
+
+                if(selectMode) {
+                    let selectButton = document.getElementById("select-mode-disabled");
+                    selectButton.id = "select-mode-enabled";
+                } else {
+                    let selectButton = document.getElementById("select-mode-enabled");
+                    selectButton.id = "select-mode-disabled";
+                }
+
+                UI.switchDisplayMode();
+            }
         </script>
     </head>
     <body onload="Canvas.draw(); UI.disableCurrentButton();" onmousedown="Mouse.pressed(event)" onmouseup="Mouse.released(event)" onmousemove="Mouse.move(event)" onkeydown="Key.checkMultipleKeyPresses(event); Canvas.keyboardUndo()" onkeyup="Key.checkMultipleKeyPresses(event);">
@@ -781,7 +812,7 @@
         <div id="tools">
             <div id="tools-transformations" class="section">
                 <h2>transformations</h2>
-                <button onclick="selectMode = !selectMode; console.log(selectMode);" type="button" value="sele">Select</button>
+                <button id="select-mode-disabled" onclick="setSelectMode(!selectMode);" type="button" value="sele">Select</button>
                 <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="rota">Rotate</button>
                 <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="scal">Scale</button>
                 <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="tran">Translate</button>

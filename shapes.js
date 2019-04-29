@@ -397,20 +397,11 @@ class Curve extends Shape {
         let endX = this.width;
         let endY = this.height - (this.height * 3.6/5);
 
-        console.log("endX: " + endX + "\nendY: " + endY);
-
         let rotateEndAroundOrigin = Transform.rotate(endX, endY, rota);
-
-        console.log("REAO: " + rotateEndAroundOrigin);
-
         let translateBackEnd = Transform.translate(rotateEndAroundOrigin[0][0], rotateEndAroundOrigin[1][0], this.originX, this.originY);
-
-        console.log("TBE: " + translateBackEnd);
 
         this._points[3][0] = translateBackEnd[0][0];
         this._points[3][1] = translateBackEnd[1][0];
-
-        console.log(this._points);
     }
 
     scale () {
@@ -418,7 +409,6 @@ class Curve extends Shape {
         let controlPoint01Y = 0;
         let controlPoint02X = 0;
         let controlPoint02Y = 0;
-        let translateOrigin = 0;
         let translateControlPoint01 = 0;
         let translateControlPoint02 = 0;
         let translateEnd = 0;
@@ -432,18 +422,18 @@ class Curve extends Shape {
         this.height = yDistance;
 
         controlPoint01X = this.width * 2/5;
-        controlPoint01Y = -1 * (this.height + (this.height * 3.6/5)); // this makes the height roughly the same size as other shapes with the same height
+        controlPoint01Y = this.height + (this.height * 3.6/5);
         controlPoint02X = this.width - (this.width * 2/5);
         controlPoint02Y = this.height + (this.height * 3.6/5);
         
-        translateControlPoint01 = Transform.translate(this.originX + controlPoint01X, this.originY + controlPoint01Y, xDistance, yDistance);
+        translateControlPoint01 = Transform.translate(this.originX + controlPoint01X, this.originY - controlPoint01Y, xDistance, yDistance);
         translateControlPoint02 = Transform.translate(this.originX + controlPoint02X, this.originY + controlPoint02Y, xDistance, yDistance);
         translateEnd = Transform.translate(this.originX + this.width, this.originY, xDistance, yDistance);
         
         [this._points[0][0], this._points[0][1]] = [this.originX, this.originY];
         [this._points[1][0], this._points[1][1]] = [translateControlPoint01[0][0], translateControlPoint01[1][0]];
         [this._points[2][0], this._points[2][1]] = [translateControlPoint02[0][0], translateControlPoint02[1][0]];
-        [this._points[3][0], this._points[3][1]] = [translateEnd[0][0], translateEnd[1][0]];
+        [this._points[3][0], this._points[3][1]] = [translateEnd[0][0], this.originY];
     }
 
     translate () {
@@ -512,6 +502,9 @@ class Rectangle extends Shape {
     rotate () {
         let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
         document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        this._points[0][0] = this.originX;
+        this._points[0][1] = this.originY;
 
         // top right
         let rotateTopRightAroundOrigin = Transform.rotate(this.width, 0, rota);
