@@ -684,6 +684,30 @@ class Polyline {
         this.points.push([mousePressedX, mousePressedY]);
     }
 
+    calculateMidPoint () {
+        let leftMost = 600; // start at 600 to guarantee a change
+        let rightMost = 0;
+        let topMost = 0;
+        let bottomMost = 600;
+        
+        for(let i = 0; i < this.points.length; ++i) {
+            if(this.points[i][0] > rightMost) {
+                rightMost = this.points[i][0];
+            } else if (this.points[i][0] < leftMost) {
+                leftMost = this.points[i][0];
+            }
+
+
+            if(this.points[i][1] > topMost) {
+                topMost = this.points[i][1];
+            } else if (this.points[i][1] < bottomMost) {
+                bottomMost = this.points[i][1];
+            }
+        }
+
+        return [rightMost / 2, topMost / 2];
+    }
+
     draw () {
         context.beginPath();
         context.moveTo(this.points[0][0], this.points[0][1]);
@@ -710,6 +734,14 @@ class Polyline {
         context.stroke();
     }
 
+    edit (mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) {
+        let xDistance = mouseMoveX - mouseOriginX;
+        let yDistance = mouseMoveY - mouseOriginY;
+        let rotation = Trig.calculateRotation(mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY);
+
+        this.transform(xDistance, yDistance, rotation);
+    }
+
     load (shape) {
         let jsonShape = JSON.parse(shape);
         this.originX = jsonShape.originX;
@@ -727,11 +759,42 @@ class Polyline {
         }
     }
 
+    rotate (rot) {
+        document.getElementById('rotation').innerHTML = parseFloat(rot * 180 / Math.PI).toFixed(2) + "°";
+        
+        for(let i = 0; i < this.points.length; ++i) {
+            let rotateAroundOrigin = Transform.rotate(this.points[i][0], this.points[i][1], rot);
+
+            let translateBack = Transform.translate(rotateAroundOrigin[0][0], rotateAroundOrigin[1][0], this.originX, this.originY);
+
+            this.points[i][0] = translateBack[0][0];
+            this.points[i][1] = translateBack[1][0];
+        }
+    }
+
     save () {
         if(!!Canvas.drawnShapes[0]) {
             Canvas.drawnShapes.push([this._shapeType, currentTool, this.toString()]);
         } else {
             Canvas.drawnShapes[0] = [this._shapeType, currentTool, this.toString()];
+        }
+    }
+
+    scale (xDistance, yDistance) {
+        let midpoint = this.calculateMidPoint();
+
+        for(let i = 0; i < this.points.length; ++i) {
+            if(this.points[i][0] < midpoint[0]) {
+                this.points[i][0] -= xDistance;
+            } else {
+                this.points[i][0] += xDistance;
+            }
+
+            if(this.points[i][1] < midpoint[1]) {
+                this.points[i][1] -= yDistance;
+            } else {
+                this.points[i][1] += yDistance;
+            }
         }
     }
 
@@ -751,6 +814,32 @@ class Polyline {
     toString () {
         let jsonRep = this.toJSON();
         return JSON.stringify(jsonRep);
+    }
+
+    transform (xDistance = 0, yDistance = 0, rotation = 0) {
+        switch(currentTool) {
+            case 'rota':
+                this.rotate(rotation);
+                break;
+            case 'scal':
+                this.scale(xDistance, yDistance);
+                break;
+            case 'tran':
+                this.translate(xDistance, yDistance);
+                break;
+            default:
+                // hits this when drawing previously drawn shape
+                break;
+        }
+    }
+    
+    translate (xDistance, yDistance) {
+        for(let i = 0; i < this.points.length; ++i) {
+            let translateBack = Transform.translate(this.points[i][0], this.points[i][1], xDistance, yDistance);
+
+            this.points[i][0] = translateBack[0][0];
+            this.points[i][1] = translateBack[1][0];
+        }
     }
 }
 

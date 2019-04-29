@@ -14,11 +14,11 @@
             var keysPressed = new Array();
 
             var currentFill = '#000000';
-            var currentShape = 'circ';
+            var currentShape = 'plin';
             var currentHeight = 10;
             var currentWidth = 10;
             var currentStroke = '#000000';
-            var currentTool = 'scal';
+            var currentTool = 'tran';
 
             var selectMode = false;
             var selectedShape = -1;
@@ -334,7 +334,7 @@
                             }
                         } else {
                             if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
-                                // console.log("index [" + i + "]: " + shape);
+                                console.log("index [" + i + "]: " + shape);
                                 foundShape = true;
                                 selectedShape = i;
                             } 
@@ -486,7 +486,11 @@
 
                             let originalFill = shape.fillColor;
                             shape.fillColor = "#cccccc";
-                            shape.transform();
+
+                            if(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'pgon') {
+                                shape.transform();
+                            }
+
                             currentTool = tempTool;
                             shape.edit(Mouse.pressedX, Mouse.pressedY, Mouse.moveX, Mouse.moveY);
                             shape.draw();
@@ -520,7 +524,7 @@
                         } else if (selectMode && editedShape != null) {
                             Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] = currentTool; // this doesn't make the right changes sometimes...?
                             Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF] = editedShape.toString();
-                            // console.log(Canvas.drawnShapes);
+                            console.log(Canvas.drawnShapes);
                             selectedShape = -1;
                             editedShape = null;
                         }
