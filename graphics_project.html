@@ -397,7 +397,7 @@
                                 break;
                             case "curv":
                                 tempShape = new Curve(Mouse.pressedX, Mouse.pressedY, currentWidth, currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw(false, false);
+                                tempShape.draw(false);
                                 break;
                             case "elli":
                                 tempShape = new Ellipse(Mouse.pressedX, Mouse.pressedY, currentWidth / 2, currentHeight / 2, Mouse.moveX, Mouse.moveY, currentStroke);
@@ -405,7 +405,7 @@
                                 break;
                             case "line":
                                 tempShape = new Line(Mouse.pressedX, Mouse.pressedY, Mouse.pressedX + currentWidth, Mouse.pressedY + currentHeight, Mouse.moveX, Mouse.moveY, currentStroke);
-                                tempShape.draw(false, false);
+                                tempShape.draw(false);
                                 break;
                             case "pgon":
                                 if(Key.checkPressed(Key.ctrl) && drawing) {
@@ -433,6 +433,8 @@
                                 console.log("Error: no shape selected.");
                                 break;
                         }
+                        
+
                     } else if(Mouse.isPressed && selectMode) {
                         Canvas.clear();
                         Canvas.drawPrevious();
@@ -445,60 +447,48 @@
                             switch(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TYPE]) {
                                 case "circ":
                                     shape = new Circle();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "curv":
                                     shape = new Curve();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "elli":
                                     shape = new Ellipse();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "line":
                                     shape = new Line();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "pgon":
                                     shape = new Polygon();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "plin":
                                     shape = new Polyline();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "rect":
                                     shape = new Rectangle();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "squa":
                                     shape = new Square();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 case "tria":
                                     shape = new Triangle();
-                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
                                     break;
                                 default:
                                     console.log("Error -> Canvas.drawPrevious(): no shape definition for " + Canvas.drawnShapes[selectedShape][Enum.SHAPE_TYPE] + ".");
                                     break;
                             }
-
-                            let originalFill = shape.fillColor;
-
-                            if(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'curv' && Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'plin') {
-                                shape.fillColor = "#cccccc";
-                            }
-
-                            if(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'pgon') {
-                                shape.transform();
-                            }
+                            
+                            shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                            shape.transform();
 
                             currentTool = tempTool;
                             shape.edit(Mouse.pressedX, Mouse.pressedY, Mouse.moveX, Mouse.moveY);
-                            shape.draw();
-                            shape.fillColor = originalFill;
                             editedShape = shape.toString();
+
+                            // add new stroke color to make it easier to tell what the transformation will do to the shape
+                            let originalStroke = shape.strokeColor;
+                            shape.strokeColor = "#ff0000";
+                            shape.draw(false);
+                            shape.strokeColor = originalStroke;
                         }
                     }
 
