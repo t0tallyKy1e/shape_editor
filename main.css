@@ -209,6 +209,34 @@ td {
     padding-left: 10px;
 }
 
+#instructions {
+    padding-right: 0;
+}
+
+#inner-instructions {
+    max-height: 287px;
+    overflow-x: hide;
+    overflow-y: scroll;
+}
+
+#inner-instructions::-webkit-scrollbar {
+    width: 10px;
+}
+
+#inner-instructions::-webkit-scrollbar-track {
+    background: #005ecb;
+    border-radius: 5px;
+}
+
+#inner-instructions::-webkit-scrollbar-thumb {
+    background: #448AFF; 
+    border-radius: 5px;
+}
+
+#inner-instructions::-webkit-scrollbar-thumb:hover {
+    background: #448AFF; 
+}
+
 #left-side {
     left: 10px;
     position: absolute;

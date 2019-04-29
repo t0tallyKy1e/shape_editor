@@ -328,13 +328,13 @@
                             context.lineWidth = 5;
 
                             if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
-                                console.log("index [" + i + "]: " + shape);
+                                // console.log("index [" + i + "]: " + shape);
                                 foundShape = true;
                                 selectedShape = i;
                             }
                         } else {
                             if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
-                                console.log("index [" + i + "]: " + shape);
+                                // console.log("index [" + i + "]: " + shape);
                                 foundShape = true;
                                 selectedShape = i;
                             } 
@@ -485,7 +485,10 @@
                             }
 
                             let originalFill = shape.fillColor;
-                            shape.fillColor = "#cccccc";
+
+                            if(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'curv' && Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'plin') {
+                                shape.fillColor = "#cccccc";
+                            }
 
                             if(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] != 'pgon') {
                                 shape.transform();
@@ -524,7 +527,7 @@
                         } else if (selectMode && editedShape != null) {
                             Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] = currentTool; // this doesn't make the right changes sometimes...?
                             Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF] = editedShape.toString();
-                            console.log(Canvas.drawnShapes);
+                            // console.log(Canvas.drawnShapes);
                             selectedShape = -1;
                             editedShape = null;
                         }
@@ -967,18 +970,25 @@
             </div>
 
             <div id="instructions" class="section">
-                <h2>instructions</h2>
-                <span>
-                    <h3>drawing</h3>
-                    <p>for a classic style of drawing, click the <strong>Scale button</strong> and then click the button of the shape you would like to draw.</p>
-                    <h3>poly-line / polygon drawing</h3>
-                    <p><ul>
-                        <li>to begin drawing a poly-line / polygon, hold CTRL and click the mouse where you would like the line to begin</li>
-                        <li>keep CTRL and the mouse pressed and drag until you reach the point where you would like the current line to end. click the mouse (this will end the current line and begin the next line).</li>
-                        <li>repeat this process until you are satisfied with the shape of the line.</li>
-                        <li>to stop drawing a poly-line / polygon, release CTRL and click the mouse anywhere in the canvas.</li>
-                    </ul></p>
-                </span>
+                <div id="inner-instructions">
+                    <h2>instructions</h2>
+                    <span>
+                        <h3>drawing</h3>
+                        <p>for a classic style of drawing,
+                            <ul>
+                                <li> click the <strong>Scale button</strong> </li>
+                                <li> click the button of the shape you would like to draw </li>
+                                <li> draw something </li>
+                            </ul>
+                        <h3>poly-line / polygon drawing</h3>
+                        <p><ul>
+                            <li>to begin drawing a poly-line / polygon, hold CTRL and click the mouse where you would like the line to begin</li>
+                            <li>keep CTRL and the mouse pressed and drag until you reach the point where you would like the current line to end. click the mouse (this will end the current line and begin the next line).</li>
+                            <li>repeat this process until you are satisfied with the shape of the line.</li>
+                            <li>to stop drawing a poly-line / polygon, release CTRL and click the mouse anywhere in the canvas.</li>
+                        </ul></p>
+                    </span>
+                </div>
             </div>
         </div>
     </body>
