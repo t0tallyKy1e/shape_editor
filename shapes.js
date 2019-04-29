@@ -84,6 +84,19 @@ class Shape {
         this.debug();
     }
 
+    edit (mouseOriginX, mouseOriginY, mouseMoveX, mouseMoveY) {
+        let xDistance = mouseMoveX - mouseOriginX;
+        let yDistance = mouseMoveY - mouseOriginY;
+
+        this.mouseX += xDistance;
+        this.mouseY += yDistance;
+
+        console.log("moved mouseX " + xDistance + " pixels to " + this.mouseX);
+        console.log("moved mouseY " + yDistance + " pixels to " + this.mouseY);
+
+        this.transform();
+    }
+
     load (shape) {
         let jsonShape = JSON.parse(shape);
         this.originX = jsonShape.originX;

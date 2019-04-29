@@ -14,14 +14,15 @@
             var keysPressed = new Array();
 
             var currentFill = '#000000';
-            var currentShape = 'curv';
+            var currentShape = 'circ';
             var currentHeight = 10;
             var currentWidth = 10;
             var currentStroke = '#000000';
-            var currentTool = 'rota';
+            var currentTool = 'scal';
 
             var selectMode = false;
             var selectedShape = -1;
+            var editedShape = null;
 
             var tempShape = []; // used for saving the currently drawn shape
             var drawing = false;
@@ -334,6 +335,7 @@
                             if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
                                 console.log("index [" + i + "]: " + shape);
                                 foundShape = true;
+                                selectedShape = i;
                             } 
                         }
 
@@ -431,7 +433,63 @@
                                 break;
                         }
                     } else if(Mouse.isPressed && selectMode) {
-                        
+                        Canvas.clear();
+                        Canvas.drawPrevious();
+
+                        if(selectedShape != -1 && !!Canvas.drawnShapes[selectedShape]) {
+                            let shape = null;
+                            tempTool = currentTool;
+                            currentTool = Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL];
+
+                            switch(Canvas.drawnShapes[selectedShape][Enum.SHAPE_TYPE]) {
+                                case "circ":
+                                    shape = new Circle();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "curv":
+                                    shape = new Curve();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "elli":
+                                    shape = new Ellipse();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "line":
+                                    shape = new Line();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "pgon":
+                                    shape = new Polygon();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "plin":
+                                    shape = new Polyline();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "rect":
+                                    shape = new Rectangle();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "squa":
+                                    shape = new Square();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                case "tria":
+                                    shape = new Triangle();
+                                    shape.load(Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF]);
+                                    break;
+                                default:
+                                    console.log("Error -> Canvas.drawPrevious(): no shape definition for " + Canvas.drawnShapes[selectedShape][Enum.SHAPE_TYPE] + ".");
+                                    break;
+                            }
+
+                            shape.transform();
+                            currentTool = tempTool;
+                            shape.edit(Mouse.pressedX, Mouse.pressedY, Mouse.moveX, Mouse.moveY);
+                            shape.draw();
+
+                            editedShape = shape.toString();
+                        }
                     }
 
                     document.getElementById('mouse_move_x').innerHTML = Mouse.moveX;
@@ -456,6 +514,12 @@
                             drawing = false;
                             currentPLine = 0;
                             tempShape = null;
+                        } else if (selectMode && editedShape != null) {
+                            Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] = currentTool; // this doesn't make the right changes sometimes...?
+                            Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF] = editedShape.toString();
+                            console.log(Canvas.drawnShapes);
+                            selectedShape = -1;
+                            editedShape = null;
                         }
                     }
 
