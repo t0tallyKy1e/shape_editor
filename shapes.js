@@ -91,8 +91,8 @@ class Shape {
         this.mouseX += xDistance;
         this.mouseY += yDistance;
 
-        console.log("moved mouseX " + xDistance + " pixels to " + this.mouseX);
-        console.log("moved mouseY " + yDistance + " pixels to " + this.mouseY);
+        // console.log("moved mouseX " + xDistance + " pixels to " + this.mouseX);
+        // console.log("moved mouseY " + yDistance + " pixels to " + this.mouseY);
 
         this.transform();
     }

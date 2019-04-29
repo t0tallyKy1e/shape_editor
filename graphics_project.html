@@ -330,10 +330,11 @@
                             if(context.isPointInStroke(Mouse.pressedX, Mouse.pressedY)) {
                                 console.log("index [" + i + "]: " + shape);
                                 foundShape = true;
+                                selectedShape = i;
                             }
                         } else {
                             if(context.isPointInPath(Mouse.pressedX, Mouse.pressedY)) {
-                                console.log("index [" + i + "]: " + shape);
+                                // console.log("index [" + i + "]: " + shape);
                                 foundShape = true;
                                 selectedShape = i;
                             } 
@@ -483,11 +484,13 @@
                                     break;
                             }
 
+                            let originalFill = shape.fillColor;
+                            shape.fillColor = "#cccccc";
                             shape.transform();
                             currentTool = tempTool;
                             shape.edit(Mouse.pressedX, Mouse.pressedY, Mouse.moveX, Mouse.moveY);
                             shape.draw();
-
+                            shape.fillColor = originalFill;
                             editedShape = shape.toString();
                         }
                     }
@@ -517,7 +520,7 @@
                         } else if (selectMode && editedShape != null) {
                             Canvas.drawnShapes[selectedShape][Enum.SHAPE_TOOL] = currentTool; // this doesn't make the right changes sometimes...?
                             Canvas.drawnShapes[selectedShape][Enum.SHAPE_DEF] = editedShape.toString();
-                            console.log(Canvas.drawnShapes);
+                            // console.log(Canvas.drawnShapes);
                             selectedShape = -1;
                             editedShape = null;
                         }
