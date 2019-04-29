@@ -365,17 +365,52 @@ class Curve extends Shape {
     }
 
     rotate () {
-        // need to do
         let controlPoint01X = 0;
         let controlPoint01Y = 0;
         let controlPoint02X = 0;
         let controlPoint02Y = 0;
-        let translateOrigin = 0;
-        let translateControlPoint01 = 0;
-        let translateControlPoint02 = 0;
-        let translateEnd = 0;
-        let xDistance = 0;
-        let yDistance = 0;
+
+        controlPoint01X = this.width * 2/5;
+        controlPoint01Y = -1 * (this.height + (this.height * 3.6/5));
+        controlPoint02X = this.width - (this.width * 2/5);
+        controlPoint02Y = this.height + (this.height * 3.6/5);
+
+        // rotation
+        let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
+        document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
+
+        // control point 1
+        let rotateControlPoint01AroundOrigin = Transform.rotate(controlPoint01X, controlPoint01Y, rota);
+        let translateBackControlPoint01 = Transform.translate(rotateControlPoint01AroundOrigin[0][0], rotateControlPoint01AroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[1][0] = translateBackControlPoint01[0][0];
+        this._points[1][1] = translateBackControlPoint01[1][0];
+
+        // control point 2
+        let rotateControlPoint02AroundOrigin = Transform.rotate(controlPoint02X, controlPoint02Y, rota);
+        let translateBackControlPoint02 = Transform.translate(rotateControlPoint02AroundOrigin[0][0], rotateControlPoint02AroundOrigin[1][0], this.originX, this.originY);
+
+        this._points[2][0] = translateBackControlPoint02[0][0];
+        this._points[2][1] = translateBackControlPoint02[1][0];
+        
+        // end
+        let endX = this.width;
+        let endY = this.height - (this.height * 3.6/5);
+
+        console.log("endX: " + endX + "\nendY: " + endY);
+
+        let rotateEndAroundOrigin = Transform.rotate(endX, endY, rota);
+
+        console.log("REAO: " + rotateEndAroundOrigin);
+
+        let translateBackEnd = Transform.translate(rotateEndAroundOrigin[0][0], rotateEndAroundOrigin[1][0], this.originX, this.originY);
+
+        console.log("TBE: " + translateBackEnd);
+
+        this._points[3][0] = translateBackEnd[0][0];
+        this._points[3][1] = translateBackEnd[1][0];
+
+        console.log(this._points);
     }
 
     scale () {
@@ -475,10 +510,6 @@ class Rectangle extends Shape {
     }
 
     rotate () {
-        // might use this later to rotate around center of line
-        // let midpointX = this.originX + Math.abs(this.width - this.originX) / 2;
-        // let midpointY = this.originY + Math.abs(this.height - this.originY) / 2;
-
         let rota = Trig.calculateRotation(this.originX, this.originY, this.mouseX, this.mouseY);
         document.getElementById('rotation').innerHTML = parseFloat(rota * 180 / Math.PI).toFixed(2) + "°";
 
