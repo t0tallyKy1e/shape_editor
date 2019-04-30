@@ -143,10 +143,6 @@ td {
     padding: 10px;
 }
 
-#blue-bar {
-    color: #448AFF;
-}
-
 .button-group {
     border: 1px solid #448AFF;
     border-radius: 5px;
@@ -190,6 +186,10 @@ td {
     /*box-shadow: 5px 5px 5px 5px #212121;*/
 }
 
+#blue-bar {
+    color: #448AFF;
+}
+
 #dark-mode-switch {
     height: 25px;
     width: 75px;
@@ -201,12 +201,12 @@ td {
     padding: 5px;
 }
 
-#debug h3 {
-    padding: 0px;
-}
-
 #debug h2 {
     padding-left: 10px;
+}
+
+#debug h3 {
+    padding: 0px;
 }
 
 #instructions {

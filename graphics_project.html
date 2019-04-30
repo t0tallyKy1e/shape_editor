@@ -31,8 +31,9 @@
 
             var Canvas = {
                 drawnShapes : new Array(),
+                gridSize : 10, // this could be an option in a future Settings page
                 size : 600,
-                gridSize : 10,
+                undoCache: new Array(),
 
                 clear : () => {
                     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -142,14 +143,13 @@
                     currentFill = tempFill;
                 },
 
-                keyboardUndo : () => {
-                    if (keysPressed[Key.ctrl] && keysPressed[Key.z]) {
-                        Canvas.undo();
-                    }
-                },
-
                 redo : () => {
-
+                    if(!!Canvas.undoCache[0]) {
+                        let poppedShape = Canvas.undoCache.pop();
+                        Canvas.drawnShapes.push(poppedShape);
+                        Canvas.clear();
+                        Canvas.drawPrevious();
+                    }
                 },
 
                 reset : () => {
@@ -164,9 +164,12 @@
                 },
 
                 undo : () => {
-                    Canvas.drawnShapes.pop();
-                    Canvas.clear();
-                    Canvas.drawPrevious();
+                    if(!!Canvas.drawnShapes[0]) {
+                        let poppedShape = Canvas.drawnShapes.pop()
+                        Canvas.undoCache.push(poppedShape);
+                        Canvas.clear();
+                        Canvas.drawPrevious();
+                    }
                 },
             }
 
@@ -186,6 +189,8 @@
                     link.download = 'shapes_image';
                     link.click();
                 },
+
+                
 
                 load : () => {
                     let fileInput = document.createElement("input");
@@ -221,6 +226,13 @@
 
             var Key = {
                 ctrl : 17,
+                del : 46,
+                shift : 16,
+                tilde : 192,
+                e : 69,
+                o : 79,
+                r : 82,
+                s : 83,
                 z : 90,
 
                 // -- I got the algorithm for this solution from https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript#answer-12444641
@@ -230,7 +242,56 @@
 
                 checkPressed : (key) => {
                     return keysPressed[key];
-                }
+                },
+
+                keyboardExport : () => {
+                    if (keysPressed[Key.ctrl] && keysPressed[Key.e]) {
+                        File.exportAsPNG();
+                    }
+                },
+
+                keyboardLoad : () => {
+                    if (keysPressed[Key.ctrl] && keysPressed[Key.o]) {
+                        File.load();
+                    }
+                }, 
+                
+                keyboardRedo : () => {
+                    if (keysPressed[Key.ctrl] && keysPressed[Key.shift] && keysPressed[Key.z]) {
+                        Canvas.redo();
+                    }
+                },
+
+                // keyboardRefresh : () => {
+                //     if(keysPressed[Key.ctrl] && keysPressed[Key.r]) {
+                //         location.reload();
+                //     }
+                // },
+
+                // keyboardResetCanvas : () => {
+                //     if (keysPressed[Key.ctrl] && keysPressed[Key.del]) {
+                //         Canvas.reset();
+                //     }
+                // },
+
+                // keyboardSave : (event) => {
+                //     event.preventDefault();
+                //     if(keysPressed[Key.ctrl] && keysPressed[Key.s]) {
+                //         File.save();
+                //     }
+                // },
+
+                keyboardSwitchDisplayMode : () => {
+                    if (keysPressed[Key.ctrl] && keysPressed[Key.tilde]) {
+                        UI.switchDisplayMode(!UI.darkMode);
+                    }
+                },
+
+                keyboardUndo : () => {
+                    if (keysPressed[Key.ctrl] && keysPressed[Key.z] && !keysPressed[Key.shift]) {
+                        Canvas.undo();
+                    }
+                },
             }
 
             var Matrix = {
@@ -840,7 +901,7 @@
             }
         </script>
     </head>
-    <body onload="Canvas.draw(); UI.disableCurrentButton();" onmousedown="Mouse.pressed(event)" onmouseup="Mouse.released(event)" onmousemove="Mouse.move(event)" onkeydown="Key.checkMultipleKeyPresses(event); Canvas.keyboardUndo()" onkeyup="Key.checkMultipleKeyPresses(event);">
+    <body onload="Canvas.draw(); UI.disableCurrentButton();" onmousedown="Mouse.pressed(event);" onmouseup="Mouse.released(event);" onmousemove="Mouse.move(event);" onkeydown="Key.checkMultipleKeyPresses(event); Key.keyboardUndo(); Key.keyboardRedo();Key.keyboardSwitchDisplayMode();" onkeyup="Key.checkMultipleKeyPresses(event);">
         <div id="toolbar">
             <a onclick="File.save();">Save</a>
             <a onclick="File.load();">Load</a>
@@ -877,6 +938,7 @@
             <div id="tools-transformations" class="section">
                 <h2>transformations</h2>
                 <button id="select-mode-disabled" onclick="setSelectMode(!selectMode);" type="button" value="sele">Select</button>
+                <span class="blue-bar">|</span>
                 <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="rota">Rotate</button>
                 <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="scal">Scale</button>
                 <button onclick="setCurrentTool(this.value); UI.disableCurrentButton();" type="button" value="tran">Translate</button>
@@ -964,19 +1026,38 @@
                     <h2>instructions</h2>
                     <span>
                         <h3>drawing</h3>
-                        <p>for a classic style of drawing,
+                        <p>
                             <ul>
                                 <li> click the <strong>Scale button</strong> </li>
                                 <li> click the button of the shape you would like to draw </li>
                                 <li> draw something </li>
                             </ul>
+                        </p>
                         <h3>poly-line / polygon drawing</h3>
-                        <p><ul>
-                            <li>to begin drawing a poly-line / polygon, hold CTRL and click the mouse where you would like the line to begin</li>
-                            <li>keep CTRL and the mouse pressed and drag until you reach the point where you would like the current line to end. click the mouse (this will end the current line and begin the next line).</li>
-                            <li>repeat this process until you are satisfied with the shape of the line.</li>
-                            <li>to stop drawing a poly-line / polygon, release CTRL and click the mouse anywhere in the canvas.</li>
-                        </ul></p>
+                        <p>
+                            <ul>
+                                <li> to begin drawing a poly-line / polygon, hold CTRL and click the mouse where you would like the line to begin </li>
+                                <li> keep CTRL and the mouse pressed and drag until you reach the point where you would like the current line to end. click the mouse (this will end the current line and begin the next line). </li>
+                                <li> repeat this process until you are satisfied with the shape of the line. </li>
+                                <li> to stop drawing a poly-line / polygon, release CTRL and click the mouse anywhere in the canvas. </li>
+                            </ul>
+                        </p>
+                        <h3>selection</h3>
+                        <p>
+                            <ul>
+                                <li> hit the <strong>select button</strong> </li>
+                                <li> hit the transformation button that you would like to apply to the shape </li>
+                                <li> click and hold the shape that you would like to edit </li>
+                                <li> release the click to save your edit </li>
+                            </ul>
+                        </p>
+                        <h3>keyboard shortcuts</h3>
+                        <p>
+                            <ul>
+                                <li><strong>undo</strong> : CTRL + Z</li>
+                                <li><strong>redo</strong> : CTRL + SHIFT + Z</li>
+                            </ul>
+                        </p>
                     </span>
                 </div>
             </div>
