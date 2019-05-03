@@ -180,8 +180,6 @@
             }
 
             var File = {
-                // logic for saving found here: https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file#answer-34156339
-
                 exportAsPNG : () => {
                     let canvasData = canvas.toDataURL();
                     let link = document.createElement("a");
@@ -189,8 +187,6 @@
                     link.download = 'shapes_image';
                     link.click();
                 },
-
-                
 
                 load : () => {
                     let fileInput = document.createElement("input");
@@ -755,6 +751,21 @@
                             }
                         }
 
+                        // select mode
+                        if(selectMode) {
+                            let selectButton = document.getElementById("select-mode-enabled");
+
+                            selectButton.style.color = "#000000";
+                            selectButton.style.backgroundColor = "#448aff";
+                            selectButton.style.borderColor = "#000000";
+                        } else {
+                            let selectButton = document.getElementById("select-mode-disabled");
+
+                            selectButton.style.color = "#000000";
+                            selectButton.style.backgroundColor = "#ffffff";
+                            selectButton.style.borderColor = "#448aff";
+                        }
+
                         // shape size input
                         let shapeHeightInput = document.getElementById('shape-height-text');
                         let shapeWidthInput = document.getElementById('shape-width-text');
@@ -821,22 +832,6 @@
                 },
             }
 
-            setCurrentShape = (shape) => {
-                currentShape = shape;
-                UI.switchDisplayMode();
-
-                if(shape == 'circ' || shape == 'squa') {
-                    currentWidth = currentWidth >= currentHeight ? currentWidth : currentHeight;
-                    currentHeight = currentHeight >= currentWidth ? currentHeight : currentWidth;
-                    setCurrentSize(currentWidth, currentHeight);
-                }
-            }
-
-            setCurrentTool = (tool) => {
-                currentTool = tool;
-                UI.switchDisplayMode();
-            }
-
             setCurrentFill = () => {
                 red = parseInt(document.getElementById('shape-fill-color-range-r').value).toString(16);
                 red = red.length == 1 ? "0" + red : red;
@@ -850,6 +845,17 @@
                 currentFill = "#" + red + green +  blue;
                 document.getElementById('shape-fill-color-text').value = currentFill;
                 document.getElementById('shape-fill-color-text').style.backgroundColor = currentFill;
+            }
+
+            setCurrentShape = (shape) => {
+                currentShape = shape;
+                UI.switchDisplayMode();
+
+                if(shape == 'circ' || shape == 'squa') {
+                    currentWidth = currentWidth >= currentHeight ? currentWidth : currentHeight;
+                    currentHeight = currentHeight >= currentWidth ? currentHeight : currentWidth;
+                    setCurrentSize(currentWidth, currentHeight);
+                }
             }
 
             setCurrentSize = (width, height) => {
@@ -884,6 +890,11 @@
                 currentStroke = "#" + red + green +  blue;
                 document.getElementById('shape-stroke-color-text').value = currentStroke;
                 document.getElementById('shape-stroke-color-text').style.backgroundColor = currentStroke;
+            }
+
+            setCurrentTool = (tool) => {
+                currentTool = tool;
+                UI.switchDisplayMode();
             }
 
             setSelectMode = (mode) => {
@@ -1028,7 +1039,7 @@
                         <h3>drawing</h3>
                         <p>
                             <ul>
-                                <li> click the <strong>Scale button</strong> </li>
+                                <li> click the <strong>Rotate button</strong> / <strong>Scale button</strong> / <strong>Translate button</strong> </li>
                                 <li> click the button of the shape you would like to draw </li>
                                 <li> draw something </li>
                             </ul>
@@ -1056,6 +1067,7 @@
                             <ul>
                                 <li><strong>undo</strong> : CTRL + Z</li>
                                 <li><strong>redo</strong> : CTRL + SHIFT + Z</li>
+                                <li><strong>switch between light and dark mode</strong> : CTRL + `</li>
                             </ul>
                         </p>
                     </span>
